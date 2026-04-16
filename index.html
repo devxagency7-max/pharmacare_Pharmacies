@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Dashboard - Pharma Care</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class='bx bx-plus-medical'></i>
+                <span>Pharma Care</span>
+            </div>
+            <i class='bx bx-menu' id="sidebar-toggle"></i>
+        </div>
+
+        <ul class="nav-links">
+            <li>
+                <a data-section="dashboard" class="nav-item active">
+                    <i class='bx bx-grid-alt'></i>
+                    <span class="link-name">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="orders" class="nav-item">
+                    <i class='bx bx-cart'></i>
+                    <span class="link-name">Orders</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="prescriptions" class="nav-item">
+                    <i class='bx bx-receipt'></i>
+                    <span class="link-name">Prescriptions</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="inventory" class="nav-item">
+                    <i class='bx bx-archive'></i>
+                    <span class="link-name">Inventory</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="patients" class="nav-item">
+                    <i class='bx bx-user'></i>
+                    <span class="link-name">Patients</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="chat" class="nav-item">
+                    <i class='bx bx-message-square-detail'></i>
+                    <span class="link-name">Chat</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="reports" class="nav-item">
+                    <i class='bx bx-bar-chart-alt-2'></i>
+                    <span class="link-name">Reports</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="notifications" class="nav-item">
+                    <i class='bx bx-bell'></i>
+                    <span class="link-name">Notifications</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="settings" class="nav-item">
+                    <i class='bx bx-cog'></i>
+                    <span class="link-name">Settings</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="login.html" class="logout-btn">
+                <i class='bx bx-log-out'></i>
+                <span class="link-name">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="search-box">
+                <i class='bx bx-search'></i>
+                <input type="text" placeholder="Search orders, meds...">
+            </div>
+
+            <div class="topbar-right">
+                <div class="notification-icon">
+                    <i class='bx bx-bell'></i>
+                    <span class="badge">5</span>
+                </div>
+                <div class="profile">
+                    <img src="https://ui-avatars.com/api/?name=Pharmacy+One&background=0D8ABC&color=fff"
+                        alt="Pharmacy Profile">
+                    <div class="profile-info">
+                        <span class="name">Pharmacy One</span>
+                        <span class="role">Pharmacist</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section-content active">
+                <div class="page-header">
+                    <h1>Pharmacy Overview</h1>
+                    <p>Track your daily operations and performance.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary"><i class='bx bx-cart-alt'></i></div>
+                        <div class="stat-details">
+                            <h3>Today's Orders</h3>
+                            <h2 id="stat-today-orders">142</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning"><i class='bx bx-time-five'></i></div>
+                        <div class="stat-details">
+                            <h3>Pending Orders</h3>
+                            <h2 id="stat-pending-orders">28</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class='bx bx-dollar'></i></div>
+                        <div class="stat-details">
+                            <h3>Revenue Today</h3>
+                            <h2 id="stat-revenue">$4,850</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger"><i class='bx bx-error'></i></div>
+                        <div class="stat-details">
+                            <h3>Low Stock Items</h3>
+                            <h2 id="stat-low-stock">12</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Orders Trend</h3>
+                        </div>
+                        <div class="card-body"><canvas id="ordersTrendChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Top Selling</h3>
+                        </div>
+                        <div class="card-body"><canvas id="topSellingChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders" class="section-content">
+                <div class="page-header">
+                    <h1>Manage Orders</h1>
+                    <p>View and update order status.</p>
+                </div>
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Patient</th>
+                                    <th>Prescription</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prescriptions Section -->
+            <section id="prescriptions" class="section-content">
+                <div class="page-header">
+                    <h1>Prescription Requests</h1>
+                    <p>Approve or reject patient prescriptions.</p>
+                </div>
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Patient</th>
+                                    <th>Image</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prescriptions-table-body">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory Section -->
+            <section id="inventory" class="section-content">
+                <div class="page-header">
+                    <h1>Inventory Management</h1>
+                    <p>Track medication stock and expiry.</p>
+                </div>
+                <div class="card">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Medication</th>
+                                    <th>Stock</th>
+                                    <th>Price</th>
+                                    <th>Expiry Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="section-content">
+                <div class="page-header">
+                    <h1>Pharmacy Reports</h1>
+                    <p>Analyze revenue and order distributions.</p>
+                </div>
+                <div class="reports-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Daily Revenue</h3>
+                        </div>
+                        <div class="card-body"><canvas id="revenueChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Monthly Orders</h3>
+                        </div>
+                        <div class="card-body"><canvas id="monthlyOrdersChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications Section -->
+            <section id="notifications" class="section-content">
+                <div class="page-header">
+                    <h1>Notifications</h1>
+                    <p>Stay updated with pharmacy activities.</p>
+                </div>
+                <div class="notification-list" id="notification-container">
+                    <!-- Dynamic Content -->
+                </div>
+            </section>
+
+            <!-- Placeholder Sections -->
+            <section id="patients" class="section-content">
+                <div class="page-header">
+                    <h1>Patients</h1>
+                    <p>Patient management module coming soon.</p>
+                </div>
+            </section>
+            <section id="chat" class="section-content">
+                <div class="page-header">
+                    <h1>Chat</h1>
+                    <p>Direct communication with patients coming soon.</p>
+                </div>
+            </section>
+            <section id="settings" class="section-content">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                    <p>Pharmacy settings coming soon.</p>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script src="js/api/mockData.js"></script>
+</body>
+
+</html>
