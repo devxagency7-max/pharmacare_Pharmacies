@@ -38,7 +38,7 @@
             </li>
             <li>
                 <a data-section="orders" class="nav-item">
-                    <i class='bx bx-cart'></i>
+                    <i class='bx bx-cart-alt'></i>
                     <span class="link-name">Orders</span>
                 </a>
             </li>
@@ -46,24 +46,6 @@
                 <a data-section="prescriptions" class="nav-item">
                     <i class='bx bx-receipt'></i>
                     <span class="link-name">Prescriptions</span>
-                </a>
-            </li>
-            <li>
-                <a data-section="inventory" class="nav-item">
-                    <i class='bx bx-archive'></i>
-                    <span class="link-name">Inventory</span>
-                </a>
-            </li>
-            <li>
-                <a data-section="patients" class="nav-item">
-                    <i class='bx bx-user'></i>
-                    <span class="link-name">Patients</span>
-                </a>
-            </li>
-            <li>
-                <a data-section="chat" class="nav-item">
-                    <i class='bx bx-message-square-detail'></i>
-                    <span class="link-name">Chat</span>
                 </a>
             </li>
             <li>
@@ -76,6 +58,7 @@
                 <a data-section="notifications" class="nav-item">
                     <i class='bx bx-bell'></i>
                     <span class="link-name">Notifications</span>
+                    <span class="badge danger">3</span>
                 </a>
             </li>
             <li>
@@ -122,40 +105,65 @@
         <!-- Page Content -->
         <div class="page-content">
 
-            <!-- Dashboard Section -->
+            <!-- Dashboard / Analysis Section -->
             <section id="dashboard" class="section-content active">
                 <div class="page-header">
-                    <h1>Pharmacy Overview</h1>
-                    <p>Track your daily operations and performance.</p>
+                    <h1>Pharmacy Analysis</h1>
+                    <p>Performance metrics and business insights.</p>
                 </div>
 
+                <!-- Instructional Guide for Owner -->
+                <div class="card guide-card">
+                    <div class="card-header">
+                        <div class="header-left">
+                            <i class='bx bx-info-circle'></i>
+                            <h3>Pharmacy Workflow Guide</h3>
+                        </div>
+                    </div>
+                    <div class="guide-steps">
+                        <div class="step">
+                            <span class="step-num">1</span>
+                            <p><strong>Incoming:</strong> New orders waiting for you to check stock.</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">2</span>
+                            <p><strong>Processing:</strong> Orders you accepted. Call the patient now!</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">3</span>
+                            <p><strong>History:</strong> Completed and archived orders.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon primary"><i class='bx bx-cart-alt'></i></div>
+                        <div class="stat-icon warning"><i class='bx bx-plus-circle'></i></div>
                         <div class="stat-details">
-                            <h3>Today's Orders</h3>
-                            <h2 id="stat-today-orders">142</h2>
+                            <h3>Pending</h3>
+                            <h2 id="stat-pending-orders">0</h2>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon warning"><i class='bx bx-time-five'></i></div>
+                        <div class="stat-icon primary"><i class='bx bx-phone-call'></i></div>
                         <div class="stat-details">
-                            <h3>Pending Orders</h3>
-                            <h2 id="stat-pending-orders">28</h2>
+                            <h3>In-Call</h3>
+                            <h2 id="stat-processing-orders">0</h2>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon success"><i class='bx bx-dollar'></i></div>
+                        <div class="stat-icon success"><i class='bx bx-check-circle'></i></div>
                         <div class="stat-details">
-                            <h3>Revenue Today</h3>
-                            <h2 id="stat-revenue">$4,850</h2>
+                            <h3>Confirmed</h3>
+                            <h2 id="stat-confirmed-orders">0</h2>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon danger"><i class='bx bx-error'></i></div>
+                        <div class="stat-icon danger"><i class='bx bx-x-circle'></i></div>
                         <div class="stat-details">
-                            <h3>Low Stock Items</h3>
-                            <h2 id="stat-low-stock">12</h2>
+                            <h3>Rejected</h3>
+                            <h2 id="stat-rejected-orders">0</h2>
                         </div>
                     </div>
                 </div>
@@ -163,119 +171,280 @@
                 <div class="dashboard-grid">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Orders Trend</h3>
+                            <h3>Order Trends</h3>
                         </div>
                         <div class="card-body"><canvas id="ordersTrendChart"></canvas></div>
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3>Top Selling</h3>
+                            <h3>Performance Analysis</h3>
                         </div>
                         <div class="card-body"><canvas id="topSellingChart"></canvas></div>
                     </div>
                 </div>
             </section>
 
-            <!-- Orders Section -->
+            <!-- Orders Management Section -->
             <section id="orders" class="section-content">
                 <div class="page-header">
-                    <h1>Manage Orders</h1>
-                    <p>View and update order status.</p>
+                    <h1>Order Management</h1>
+                    <p>Handle incoming requests and coordinate with patients.</p>
                 </div>
-                <div class="card">
+
+                <div class="workflow-alert info">
+                    <i class='bx bx-bulb'></i>
+                    <p><strong>How to manage orders:</strong> 1. Check <strong>Incoming</strong> for new requests. 2.
+                        <strong>Accept</strong> if you have the meds. 3. Go to <strong>Processing</strong> to get the
+                        patient's number and call them. 4. <strong>Confirm</strong> the order once delivered!</p>
+                </div>
+
+                <!-- Live Queue Management moved here -->
+                <div class="card live-queue-card">
+                    <div class="card-header queue-header">
+                        <div class="queue-tabs">
+                            <button class="q-tab active" onclick="switchQueueTab('new')">Incoming</button>
+                            <button class="q-tab" onclick="switchQueueTab('processing')">Processing (Need Call)</button>
+                            <button class="q-tab" onclick="switchQueueTab('history')">History</button>
+                        </div>
+                    </div>
+
                     <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Patient</th>
-                                    <th>Prescription</th>
-                                    <th>Total</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orders-table-body">
-                                <!-- Dynamic Content -->
-                            </tbody>
-                        </table>
+                        <div id="q-new-content" class="q-pane active">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-new-orders"></tbody>
+                            </table>
+                        </div>
+
+                        <div id="q-processing-content" class="q-pane">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Phone Number</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-processing-orders"></tbody>
+                            </table>
+                        </div>
+
+                        <div id="q-history-content" class="q-pane">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-history-orders"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Prescriptions Section -->
             <section id="prescriptions" class="section-content">
                 <div class="page-header">
                     <h1>Prescription Requests</h1>
-                    <p>Approve or reject patient prescriptions.</p>
+                    <p>Review patient prescriptions and coordinate medication orders.</p>
                 </div>
-                <div class="card">
+
+                <div class="workflow-alert warning">
+                    <i class='bx bx-image-alt'></i>
+                    <p><strong>Handling Prescriptions:</strong> Review the <strong>RX Image</strong> first. If the
+                        medication is available, <strong>Accept</strong> to unlock the patient's contact details for
+                        coordination.</p>
+                </div>
+
+                <div class="card live-queue-card">
+                    <div class="card-header queue-header">
+                        <div class="queue-tabs">
+                            <button class="rx-q-tab active" onclick="switchRxQueueTab('new')">Incoming Rxs</button>
+                            <button class="rx-q-tab" onclick="switchRxQueueTab('processing')">Review & Call</button>
+                            <button class="rx-q-tab" onclick="switchRxQueueTab('history')">Rx History</button>
+                        </div>
+                    </div>
+
                     <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Request ID</th>
-                                    <th>Patient</th>
-                                    <th>Image</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="prescriptions-table-body">
-                                <!-- Dynamic Content -->
-                            </tbody>
-                        </table>
+                        <!-- Table for NEW Prescriptions -->
+                        <div id="rx-q-new-content" class="rx-q-pane active">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>RX ID</th>
+                                        <th>Patient</th>
+                                        <th>Image</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-new-rxs"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table for PROCESSING Prescriptions -->
+                        <div id="rx-q-processing-content" class="rx-q-pane">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>RX ID</th>
+                                        <th>Patient</th>
+                                        <th>Phone Number</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-processing-rxs"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table for HISTORY Prescriptions -->
+                        <div id="rx-q-history-content" class="rx-q-pane">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>RX ID</th>
+                                        <th>Patient</th>
+                                        <th>Final Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-history-rxs"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Inventory Section -->
-            <section id="inventory" class="section-content">
-                <div class="page-header">
-                    <h1>Inventory Management</h1>
-                    <p>Track medication stock and expiry.</p>
-                </div>
-                <div class="card">
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Medication</th>
-                                    <th>Stock</th>
-                                    <th>Price</th>
-                                    <th>Expiry Date</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-table-body">
-                                <!-- Dynamic Content -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+
 
             <!-- Reports Section -->
             <section id="reports" class="section-content">
                 <div class="page-header">
-                    <h1>Pharmacy Reports</h1>
-                    <p>Analyze revenue and order distributions.</p>
+                    <h1>Business Insights</h1>
+                    <p>Detailed analysis of your pharmacy performance and market needs.</p>
                 </div>
-                <div class="reports-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Daily Revenue</h3>
-                        </div>
-                        <div class="card-body"><canvas id="revenueChart"></canvas></div>
+
+                <!-- Summary Row (Easy to understand) -->
+                <div class="reports-summary-grid">
+                    <div class="summary-item">
+                        <span>Total Requests</span>
+                        <h2>1,248</h2>
+                        <small class="up"><i class='bx bx-trending-up'></i> Total Patient Interest</small>
                     </div>
+                    <div class="summary-item">
+                        <span>Order Success Rate</span>
+                        <h2>88%</h2>
+                        <small class="up"><i class='bx bx-check-double'></i> Completed Successfully</small>
+                    </div>
+                    <div class="summary-item">
+                        <span>Missing Meds Count</span>
+                        <h2 class="danger-text">450 Units</h2>
+                        <small class="danger-text"><i class='bx bx-block'></i> Lost due to Out of Stock</small>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <!-- Order Source Analysis (Prescription vs Manual) -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Monthly Orders</h3>
+                            <h3>Order Source Analysis</h3>
                         </div>
-                        <div class="card-body"><canvas id="monthlyOrdersChart"></canvas></div>
+                        <div class="card-body">
+                            <canvas id="orderSourceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Fulfillment Trend -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Monthly Fulfillment Trend</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="fulfillmentTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Missed Items Analysis (Out of Stock) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Inventory Gaps (Rejected Items)</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="inventoryGapsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Rejection Feedback (Natural Language) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Rejection Feedback Notes</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="feedback-list" id="rejection-notes-list">
+                                <li>
+                                    <span class="note-date">Today, 12:40</span>
+                                    <p>"المريض رفض السعر وطلب البديل المصري (بانادول)"</p>
+                                </li>
+                                <li>
+                                    <span class="note-date">Yesterday</span>
+                                    <p>"الدواء غير متوفر حالياً في المخازن الرئيسية"</p>
+                                </li>
+                                <li>
+                                    <span class="note-date">2 days ago</span>
+                                    <p>"الروشتة غير واضحة تماماً وتاريخها قديم جداً"</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Top Requested Items List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Most Requested Medications</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="top-items-list" id="top-requested-list">
+                                <!-- Dynamic List -->
+                                <li>
+                                    <div class="item-info">
+                                        <span class="item-name">Panadol Extra</span>
+                                        <span class="item-count">142 Requests</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 85%;"></div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-info">
+                                        <span class="item-name">August 1g</span>
+                                        <span class="item-count">98 Requests</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 65%;"></div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-info">
+                                        <span class="item-name">Concor 5mg</span>
+                                        <span class="item-count">76 Requests</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 50%;"></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -291,28 +460,147 @@
                 </div>
             </section>
 
-            <!-- Placeholder Sections -->
-            <section id="patients" class="section-content">
-                <div class="page-header">
-                    <h1>Patients</h1>
-                    <p>Patient management module coming soon.</p>
-                </div>
-            </section>
+
             <section id="chat" class="section-content">
                 <div class="page-header">
                     <h1>Chat</h1>
                     <p>Direct communication with patients coming soon.</p>
                 </div>
             </section>
+            <!-- Settings Section -->
             <section id="settings" class="section-content">
                 <div class="page-header">
-                    <h1>Settings</h1>
-                    <p>Pharmacy settings coming soon.</p>
+                    <h1>Pharmacy Settings</h1>
+                    <p>Manage your public profile and service availability.</p>
+                </div>
+
+                <div class="settings-grid">
+                    <!-- Availability Status Card -->
+                    <div class="card status-settings-card">
+                        <div class="card-header">
+                            <h3><i class='bx bx-power-off'></i> Service Status</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="status-control">
+                                <div class="status-info">
+                                    <h4 id="status-text">Your Pharmacy is currently OPEN</h4>
+                                    <p>Patients can see you and send requests.</p>
+                                </div>
+                                <label class="switch-large">
+                                    <input type="checkbox" id="pharmacy-status-check" checked onchange="updatePharmacyStatus()">
+                                    <span class="slider-large round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Settings Card -->
+                    <div class="card profile-settings-card">
+                        <div class="card-header">
+                            <h3><i class='bx bx-store-alt'></i> Public Profile (Visible to Patients)</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="pharmacy-profile-form" class="settings-form" onsubmit="savePharmacyProfile(event)">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Pharmacy Name</label>
+                                        <input type="text" id="set-pharmacy-name" value="Pharmacy One" placeholder="e.g. Draya Pharmacy">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Governorate (المحافظة)</label>
+                                        <select id="set-pharmacy-gov">
+                                            <option value="Cairo" selected>Cairo (القاهرة)</option>
+                                            <option value="Giza">Giza (الجيزة)</option>
+                                            <option value="Alexandria">Alexandria (الإسكندرية)</option>
+                                            <option value="Qalyubia">Qalyubia (القليوبية)</option>
+                                            <option value="Dakahlia">Dakahlia (الدقهلية)</option>
+                                            <option value="Other">Other (محافظة أخرى)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Public Phone Number</label>
+                                        <input type="text" id="set-pharmacy-phone" value="01012345678" placeholder="Phone patients will call">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Detailed Address</label>
+                                        <input type="text" id="set-pharmacy-address" value="New Cairo, District 5" placeholder="Building, Street, Landmark">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Working Hours Description</label>
+                                    <input type="text" id="set-pharmacy-hours" value="Daily from 9 AM to 11 PM" placeholder="e.g. 24/7 or specific hours">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="action-btn approve">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </section>
 
         </div>
     </main>
+
+    <!-- Order Details Modal -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-order-id">Order Details</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="order-info-section">
+                    <div class="info-group">
+                        <label>Patient Name:</label>
+                        <span id="modal-patient-name">---</span>
+                    </div>
+                    <div class="info-group">
+                        <label>Phone Number:</label>
+                        <span id="modal-patient-phone" class="phone-highlight">---</span>
+                        <small>(Call to coordinate delivery)</small>
+                    </div>
+                </div>
+
+                <div class="order-items-list">
+                    <h3>Requested Items</h3>
+                    <ul id="modal-items-list">
+                        <!-- Dynamic items -->
+                    </ul>
+                </div>
+
+                <div id="rejection-reason-box" class="form-group" style="display: none;">
+                    <label>Rejection Note (Reason):</label>
+                    <textarea id="rejection-note" placeholder="e.g. Panadol is out of stock..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <!-- Stage 1: New Order -->
+                    <div id="stage-new" class="action-group">
+                        <button class="action-btn approve" onclick="handleOrderAction('accept')">Accept (Meds
+                            Available)</button>
+                        <button class="action-btn reject" onclick="showRejectionInput()">Reject</button>
+                    </div>
+
+                    <!-- Stage 2: Rejection Confirmation -->
+                    <div id="stage-reject" class="action-group" style="display: none;">
+                        <button class="action-btn reject" onclick="handleOrderAction('reject-confirm')">Confirm
+                            Rejection</button>
+                        <button class="action-btn view" onclick="hideRejectionInput()">Back</button>
+                    </div>
+
+                    <!-- Stage 3: After Accept (Call stage) -->
+                    <div id="stage-call" class="action-group" style="display: none;">
+                        <button class="action-btn approve" onclick="handleOrderAction('confirm')">Confirm Order
+                            (Done)</button>
+                        <button class="action-btn reject" onclick="handleOrderAction('cancel')">Cancel Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="js/app.js"></script>
     <script src="js/api/mockData.js"></script>
