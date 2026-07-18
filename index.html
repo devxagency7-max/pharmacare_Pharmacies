@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacy Dashboard - Pharma Care</title>
+    <title>Pharmacy Dashboard - Tamenny</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="css/style.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="WhatsApp%20Image%202026-04-24%20at%204.15.34%20PM.jpeg">
 </head>
 
 <body>
@@ -23,8 +25,8 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <i class='bx bx-plus-medical'></i>
-                <span>Pharma Care</span>
+                <img src="WhatsApp%20Image%202026-04-24%20at%204.15.34%20PM.jpeg" alt="Logo" style="width: 50px; height: auto; border-radius: 10px; object-fit: contain;">
+                <span>Tamenny</span>
             </div>
             <i class='bx bx-menu' id="sidebar-toggle"></i>
         </div>
@@ -58,7 +60,12 @@
                 <a data-section="notifications" class="nav-item">
                     <i class='bx bx-bell'></i>
                     <span class="link-name">Notifications</span>
-                    <span class="badge danger">3</span>
+                </a>
+            </li>
+            <li>
+                <a data-section="branches" class="nav-item">
+                    <i class='bx bx-map-pin'></i>
+                    <span class="link-name">Branches</span>
                 </a>
             </li>
             <li>
@@ -92,11 +99,11 @@
                     <span class="badge">5</span>
                 </div>
                 <div class="profile">
-                    <img src="https://ui-avatars.com/api/?name=Pharmacy+One&background=0D8ABC&color=fff"
+                    <img src="https://ui-avatars.com/api/?name=Abdallah+Mohamed+Fathy&background=0D8ABC&color=fff"
                         alt="Pharmacy Profile">
                     <div class="profile-info">
-                        <span class="name">Pharmacy One</span>
-                        <span class="role">Pharmacist</span>
+                        <span class="name">Abdallah Mohamed Fathy</span>
+                        <span class="role">Pharmacy</span>
                     </div>
                 </div>
             </div>
@@ -148,14 +155,14 @@
                     <div class="stat-card">
                         <div class="stat-icon primary"><i class='bx bx-phone-call'></i></div>
                         <div class="stat-details">
-                            <h3>In-Call</h3>
+                            <h3>Processing</h3>
                             <h2 id="stat-processing-orders">0</h2>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon success"><i class='bx bx-check-circle'></i></div>
                         <div class="stat-details">
-                            <h3>Confirmed</h3>
+                            <h3>Completed</h3>
                             <h2 id="stat-confirmed-orders">0</h2>
                         </div>
                     </div>
@@ -467,6 +474,27 @@
                     <p>Direct communication with patients coming soon.</p>
                 </div>
             </section>
+            <!-- Branches Management Section -->
+            <section id="branches" class="section-content">
+                <div class="page-header">
+                    <h1>Branch Management</h1>
+                    <p>Manage your pharmacy locations and add new branches.</p>
+                </div>
+
+                <div class="branches-actions">
+                    <button class="action-btn approve" onclick="openAddBranchModal()">
+                        <i class='bx bx-plus'></i> Add New Branch
+                    </button>
+                </div>
+
+                <div class="branches-grid" id="branches-container">
+                    <!-- Branch Cards will be rendered here -->
+                    <div class="card branch-card loading-placeholder">
+                        <p>Loading branches...</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- Settings Section -->
             <section id="settings" class="section-content">
                 <div class="page-header">
@@ -500,12 +528,35 @@
                             <h3><i class='bx bx-store-alt'></i> Public Profile (Visible to Patients)</h3>
                         </div>
                         <div class="card-body">
+                            <!-- Logo Upload Section -->
+                            <div class="logo-upload-container">
+                                <div class="logo-preview">
+                                    <img src="https://ui-avatars.com/api/?name=Abdallah+Mohamed+Fathy&background=0D8ABC&color=fff" id="profile-logo-preview" alt="Logo Preview">
+                                    <label for="pharmacy-logo-input" class="upload-badge">
+                                        <i class='bx bx-camera'></i>
+                                    </label>
+                                </div>
+                                <div class="logo-upload-info">
+                                    <h4>Pharmacy Logo</h4>
+                                    <p>JPG or PNG. Max size of 800K</p>
+                                    <input type="file" id="pharmacy-logo-input" accept="image/*" style="display: none;" onchange="previewPharmacyLogo(event)">
+                                    <button type="button" class="action-btn view" onclick="document.getElementById('pharmacy-logo-input').click()">Choose New Logo</button>
+                                </div>
+                            </div>
+
                             <form id="pharmacy-profile-form" class="settings-form" onsubmit="savePharmacyProfile(event)">
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Pharmacy Name</label>
-                                        <input type="text" id="set-pharmacy-name" value="Pharmacy One" placeholder="e.g. Draya Pharmacy">
+                                        <input type="text" id="set-pharmacy-name" value="Abdallah Mohamed Fathy" placeholder="e.g. Draya Pharmacy">
                                     </div>
+                                    <div class="form-group">
+                                        <label>License Number</label>
+                                        <input type="text" id="set-pharmacy-license" value="434567898765" readonly>
+                                        <small>License number is managed by admin</small>
+                                    </div>
+                                </div>
+                                <div class="form-row">
                                     <div class="form-group">
                                         <label>Governorate (المحافظة)</label>
                                         <select id="set-pharmacy-gov">
@@ -516,12 +567,6 @@
                                             <option value="Dakahlia">Dakahlia (الدقهلية)</option>
                                             <option value="Other">Other (محافظة أخرى)</option>
                                         </select>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Public Phone Number</label>
-                                        <input type="text" id="set-pharmacy-phone" value="01012345678" placeholder="Phone patients will call">
                                     </div>
                                     <div class="form-group">
                                         <label>Detailed Address</label>
@@ -602,6 +647,54 @@
         </div>
     </div>
 
+    <!-- Add Branch Modal -->
+    <div id="branch-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Branch</h2>
+                <span class="close-modal" onclick="closeAddBranchModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="add-branch-form" onsubmit="handleAuthAddBranch(event)">
+                    <div class="form-group">
+                        <label>Branch Name</label>
+                        <input type="text" id="branch-name" placeholder="e.g. Nasr City Branch" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City <span style="color:#EF4444">*</span></label>
+                            <input type="text" id="branch-city" placeholder="e.g. Cairo, Giza, Alexandria" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" id="branch-phone" placeholder="e.g. 010...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Detailed Address</label>
+                        <textarea id="branch-address" placeholder="Building, Street, Landmark..." required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Latitude (Optional)</label>
+                            <input type="number" step="any" id="branch-lat" placeholder="30.0444">
+                        </div>
+                        <div class="form-group">
+                            <label>Longitude (Optional)</label>
+                            <input type="number" step="any" id="branch-lng" placeholder="31.2357">
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="action-btn approve">Create Branch</button>
+                        <button type="button" class="action-btn view" onclick="closeAddBranchModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api/orders.js"></script>
+    <script src="js/api/pharmacies.js"></script>
     <script src="js/app.js"></script>
     <script src="js/api/mockData.js"></script>
 </body>

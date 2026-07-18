@@ -2,12 +2,30 @@
  * app.js - Pharmacy Dashboard Logic
  */
 
+// Sections that require PharmacyOwner role.
+// Pharmacist / PharmacyIntern can only access: prescriptions, notifications.
+const OWNER_ONLY_SECTIONS = ['dashboard', 'orders', 'reports', 'branches', 'settings'];
+
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
-    const sidebar = document.getElementById('sidebar');
+    const sidebar      = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebar-toggle');
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('.section-content');
+    const navItems     = document.querySelectorAll('.nav-item');
+    const sections     = document.querySelectorAll('.section-content');
+
+    // --- Role-based navigation ---
+    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const roles    = userInfo.roles || [];
+    const isOwner  = roles.includes('PharmacyOwner');
+
+    if (!isOwner) {
+        // Hide nav items the pharmacist cannot access
+        navItems.forEach(item => {
+            const sec = item.getAttribute('data-section');
+            if (OWNER_ONLY_SECTIONS.includes(sec)) {
+                item.closest('li').style.display = 'none';
+            }
+        });
+    }
 
     // Sidebar Toggle
     sidebarToggle.addEventListener('click', () => {
@@ -19,98 +37,168 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', () => {
             const sectionName = item.getAttribute('data-section');
 
-            // Update Navbar
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
 
-            // Update Sections
             sections.forEach(section => {
                 section.classList.remove('active');
-                if (section.id === sectionName) {
-                    section.classList.add('active');
-                }
+                if (section.id === sectionName) section.classList.add('active');
             });
 
-            // Initialize Section Data
             initSection(sectionName);
         });
     });
 
-    // Initialize Section Data Function
     function initSection(sectionName) {
-        if (sectionName === 'dashboard') initDashboard();
-        if (sectionName === 'orders') renderOrders();
+        if (sectionName === 'dashboard')     initDashboard();
+        if (sectionName === 'orders')        renderOrders();
         if (sectionName === 'prescriptions') renderPrescriptions();
-        if (sectionName === 'inventory') renderInventory();
+        if (sectionName === 'branches')      renderBranches();
         if (sectionName === 'notifications') renderNotifications();
-        if (sectionName === 'reports') renderReports();
+        if (sectionName === 'reports')       renderReports();
+        if (sectionName === 'settings')      initSettings();
     }
 
-    // Initialize Dashboard on load
-    initSection('dashboard');
+    // Default landing: owner → dashboard, pharmacist → prescriptions
+    initSection(isOwner ? 'dashboard' : 'prescriptions');
+
+    // Activate the correct nav item visually
+    const defaultSection = isOwner ? 'dashboard' : 'prescriptions';
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-section') === defaultSection) item.classList.add('active');
+    });
+    sections.forEach(section => {
+        section.classList.remove('active');
+        if (section.id === defaultSection) section.classList.add('active');
+    });
 });
 
 /**
- * Initialize Reports Charts (Volume & Quantity Based)
+ * Reports / Business Insights
+ * Data source: GET /api/v1/pharmacy/dashboard/* (5 endpoints, all need pharmacyId)
+ * No inventory module exists in backend — inventory gaps chart removed.
  */
-function renderReports() {
-    const ctxTableSource = document.getElementById('orderSourceChart');
-    const ctxTableTrend = document.getElementById('fulfillmentTrendChart');
-    const ctxTableGaps = document.getElementById('inventoryGapsChart');
+async function renderReports() {
+    const userInfo   = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const pharmacyId = userInfo.pharmacyId;
 
-    if (!ctxTableSource || !ctxTableTrend || !ctxTableGaps) return;
+    const BASE = 'http://148.230.114.124:8080/api/v1';
+    const token = localStorage.getItem('firebase_token');
+    const headers = { 'Authorization': `Bearer ${token}` };
 
-    const ctxSource = ctxTableSource.getContext('2d');
-    const ctxTrend = ctxTableTrend.getContext('2d');
-    const ctxGaps = ctxTableGaps.getContext('2d');
-
-    if (window.sourceChart) window.sourceChart.destroy();
-    if (window.trendChart) window.trendChart.destroy();
-    if (window.gapsChart) window.gapsChart.destroy();
-
-    // Chart 1: Order Source (Prescription vs Direct Request)
-    window.sourceChart = new Chart(ctxSource, {
-        type: 'pie',
-        data: {
-            labels: ['Prescriptions (Rx)', 'Direct Medication Requests'],
-            datasets: [{
-                data: [450, 798],
-                backgroundColor: ['#0057d1', '#10B981']
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
+    // Destroy old charts
+    ['sourceChart', 'trendChart', 'topMedsChart'].forEach(k => {
+        if (window[k]) { window[k].destroy(); window[k] = null; }
     });
 
-    // Chart 2: Fulfillment Trend (How many orders fulfilled per month)
-    window.trendChart = new Chart(ctxTrend, {
-        type: 'bar',
-        data: {
-            labels: ['Feb', 'Mar', 'Apr'],
-            datasets: [{
-                label: 'Fulfilled Orders',
-                data: [380, 490, 610],
-                backgroundColor: '#0057d1'
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
+    if (!pharmacyId) {
+        console.warn('renderReports: pharmacyId not found in user_info');
+        return;
+    }
 
-    // Chart 3: Inventory Gaps (Rejected items count)
-    window.gapsChart = new Chart(ctxGaps, {
-        type: 'line',
-        data: {
-            labels: ['Feb', 'Mar', 'Apr'],
-            datasets: [{
-                label: 'Rejected Items (Units)',
-                data: [150, 220, 450],
-                borderColor: '#EF4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
+    try {
+        // Fetch all 3 datasets in parallel
+        const [srcRes, trendRes, topRes] = await Promise.all([
+            fetch(`${BASE}/pharmacy/dashboard/order-source?pharmacyId=${pharmacyId}`, { headers }).then(r => r.json()),
+            fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${pharmacyId}&months=3`, { headers }).then(r => r.json()),
+            fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pharmacyId}&limit=5`, { headers }).then(r => r.json())
+        ]);
+
+        // Chart 1: Order Source — Pie (with prescription vs without)
+        const ctxSource = document.getElementById('orderSourceChart');
+        if (ctxSource && srcRes.success) {
+            window.sourceChart = new Chart(ctxSource.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['With Prescription (Rx)', 'Direct Request'],
+                    datasets: [{
+                        data: [srcRes.data.withPrescription, srcRes.data.withoutPrescription],
+                        backgroundColor: ['#0057d1', '#10B981']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Chart 2: Fulfillment Trend — Bar (completed per month)
+        const ctxTrend = document.getElementById('fulfillmentTrendChart');
+        if (ctxTrend && trendRes.success) {
+            const labels = trendRes.data.map(p => `${p.month}/${p.year}`);
+            const counts = trendRes.data.map(p => p.completedCount);
+            window.trendChart = new Chart(ctxTrend.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Fulfilled Orders',
+                        data: counts,
+                        backgroundColor: '#0057d1'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Chart 3: Top Medications — Horizontal Bar
+        const ctxTop = document.getElementById('inventoryGapsChart'); // reuse canvas
+        if (ctxTop && topRes.success) {
+            const medNames  = topRes.data.map(m => m.name);
+            const medCounts = topRes.data.map(m => m.orderItemCount);
+            window.topMedsChart = new Chart(ctxTop.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: medNames,
+                    datasets: [{
+                        label: 'Order Line Items',
+                        data: medCounts,
+                        backgroundColor: '#10B981'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            // Update the card header to reflect the new chart
+            const gapsHeader = ctxTop.closest('.card')?.querySelector('h3');
+            if (gapsHeader) gapsHeader.textContent = 'Top Requested Medications';
+        }
+
+        // Summary stats
+        const summaryRes = await fetch(
+            `${BASE}/pharmacy/dashboard/summary?pharmacyId=${pharmacyId}`, { headers }
+        ).then(r => r.json());
+
+        if (summaryRes.success) {
+            const el = id => document.querySelector(`[data-report="${id}"]`);
+            const totalEl = document.querySelector('.summary-item:nth-child(1) h2');
+            const rateEl  = document.querySelector('.summary-item:nth-child(2) h2');
+            const rejEl   = document.querySelector('.summary-item:nth-child(3) h2');
+            if (totalEl) totalEl.textContent = summaryRes.data.totalRequests.toLocaleString();
+            if (rateEl)  rateEl.textContent  = summaryRes.data.successRate.toFixed(1) + '%';
+            if (rejEl)   rejEl.textContent   = summaryRes.data.rejectedOrdersCount + ' Orders';
+        }
+
+        // Rejection notes list
+        const notesRes = await fetch(
+            `${BASE}/pharmacy/dashboard/rejection-notes?pharmacyId=${pharmacyId}&limit=10`, { headers }
+        ).then(r => r.json());
+
+        if (notesRes.success) {
+            const list = document.getElementById('rejection-notes-list');
+            if (list) {
+                list.innerHTML = notesRes.data.map(n => {
+                    const date = new Date(n.rejectedAt).toLocaleDateString('en-EG');
+                    return `<li><span class="note-date">${date}</span><p>"${n.reason}"</p></li>`;
+                }).join('') || '<li><p>No rejection notes yet.</p></li>';
+            }
+        }
+
+    } catch (err) {
+        console.error('renderReports error:', err);
+    }
 }
 
 /**
@@ -166,12 +254,12 @@ function updateDashboardStats() {
 
     const pending = window.mockOrders.filter(o => o.orderStatus === 'Pending').length;
     const processing = window.mockOrders.filter(o => o.orderStatus === 'Accepted').length;
-    const confirmed = window.mockOrders.filter(o => o.orderStatus === 'Confirmed').length;
-    const rejected = window.mockOrders.filter(o => o.orderStatus === 'Rejected' || o.orderStatus === 'Cancelled').length;
+    const completed = window.mockOrders.filter(o => o.orderStatus === 'Completed').length;
+    const rejected = window.mockOrders.filter(o => ['Rejected', 'Cancelled'].includes(o.orderStatus)).length;
 
     document.getElementById('stat-pending-orders').textContent = pending;
     document.getElementById('stat-processing-orders').textContent = processing;
-    document.getElementById('stat-confirmed-orders').textContent = confirmed;
+    document.getElementById('stat-confirmed-orders').textContent = completed;
     document.getElementById('stat-rejected-orders').textContent = rejected;
 }
 
@@ -201,7 +289,7 @@ function renderOrders() {
         window.mockOrders = [
             { id: 'ORD-1001', customerName: 'Ahmed Ali', phone: '01012345678', items: ['Panadol 500mg', 'Vitamin C'], orderStatus: 'Pending', createdAt: '10:00 AM' },
             { id: 'ORD-1002', customerName: 'Sara Mohamed', phone: '01198765432', items: ['Ibuprofen 400mg'], orderStatus: 'Accepted', createdAt: '09:30 AM' },
-            { id: 'ORD-1003', customerName: 'Youssef Hassan', phone: '01233445566', items: ['Amoxicillin 500mg'], orderStatus: 'Confirmed', createdAt: '08:45 AM' },
+            { id: 'ORD-1003', customerName: 'Youssef Hassan', phone: '01233445566', items: ['Amoxicillin 500mg'], orderStatus: 'Completed', createdAt: '08:45 AM' },
             { id: 'ORD-1004', customerName: 'Mona Ibrahim', phone: '01511223344', items: ['Antinal'], orderStatus: 'Rejected', createdAt: 'Yesterday' }
         ];
     }
@@ -212,7 +300,7 @@ function renderOrders() {
 
     if (!tableNew) return;
 
-    // 1. Render NEW Orders
+    // 1. Render NEW Orders (Pending)
     const newOrders = window.mockOrders.filter(o => o.orderStatus === 'Pending');
     tableNew.innerHTML = newOrders.map(o => `
         <tr>
@@ -221,13 +309,13 @@ function renderOrders() {
             <td>${o.items.join(', ')}</td>
             <td>${o.createdAt}</td>
             <td class="table-actions">
-                <button class="action-btn approve" onclick="updateOrderStatus('${o.id}', 'Accepted')">Accept</button>
+                <button class="action-btn approve" onclick="handleOrderAction('${o.id}', 'accept')">Accept</button>
                 <button class="action-btn reject" onclick="promptReject('${o.id}')">Reject</button>
             </td>
         </tr>
     `).join('') || '<tr><td colspan="5" style="text-align:center">No new orders</td></tr>';
 
-    // 2. Render PROCESSING Orders
+    // 2. Render PROCESSING Orders (Accepted)
     const procOrders = window.mockOrders.filter(o => o.orderStatus === 'Accepted');
     tableProcessing.innerHTML = procOrders.map(o => `
         <tr>
@@ -235,14 +323,14 @@ function renderOrders() {
             <td>${o.customerName}</td>
             <td><a href="tel:${o.phone}" class="phone-btn"><i class='bx bx-phone'></i> ${o.phone}</a></td>
             <td class="table-actions">
-                <button class="action-btn approve" onclick="updateOrderStatus('${o.id}', 'Confirmed')">Confirm (Done)</button>
-                <button class="action-btn reject" onclick="updateOrderStatus('${o.id}', 'Cancelled')">Cancel</button>
+                <button class="action-btn approve" onclick="handleOrderAction('${o.id}', 'complete')">Complete (Done)</button>
+                <button class="action-btn reject" onclick="handleOrderAction('${o.id}', 'cancel')">Cancel</button>
             </td>
         </tr>
     `).join('') || '<tr><td colspan="4" style="text-align:center">No orders in process</td></tr>';
 
-    // 3. Render HISTORY
-    const histOrders = window.mockOrders.filter(o => ['Confirmed', 'Rejected', 'Cancelled'].includes(o.orderStatus));
+    // 3. Render HISTORY (Completed, Rejected, Cancelled)
+    const histOrders = window.mockOrders.filter(o => ['Completed', 'Rejected', 'Cancelled'].includes(o.orderStatus));
     tableHistory.innerHTML = histOrders.map(o => `
         <tr>
             <td>${o.id}</td>
@@ -255,22 +343,44 @@ function renderOrders() {
     updateDashboardStats();
 }
 
-function updateOrderStatus(orderId, newStatus) {
+/**
+ * Handle Order Actions (Accept, Complete, Cancel)
+ */
+async function handleOrderAction(orderId, action) {
+    console.log(`Action: ${action} for Order: ${orderId}`);
+    
+    // In a real app, we would call the API:
+    // let response;
+    // if (action === 'accept') response = await apiRespondToOrder(orderId, 'accept');
+    // if (action === 'reject') response = await apiRespondToOrder(orderId, 'reject');
+    // if (action === 'complete') response = await apiCompleteOrder(orderId);
+
+    // For now, we update mock data:
     const order = window.mockOrders.find(o => o.id === orderId);
     if (order) {
-        order.orderStatus = newStatus;
+        if (action === 'accept') {
+            order.orderStatus = 'Accepted';
+            switchQueueTab('processing');
+        } else if (action === 'complete') {
+            order.orderStatus = 'Completed';
+            switchQueueTab('history');
+        } else if (action === 'cancel') {
+            order.orderStatus = 'Cancelled';
+            switchQueueTab('history');
+        } else if (action === 'reject-confirm') {
+            order.orderStatus = 'Rejected';
+            switchQueueTab('history');
+        }
         renderOrders();
-
-        // Auto-switch tab for better UX
-        if (newStatus === 'Accepted') switchQueueTab('processing');
-        if (['Confirmed', 'Cancelled', 'Rejected'].includes(newStatus)) switchQueueTab('history');
     }
 }
+
+// updateOrderStatus was replaced by handleOrderAction
 
 function promptReject(orderId) {
     const reason = prompt("Enter rejection reason for the patient:", "Items out of stock");
     if (reason !== null) {
-        updateOrderStatus(orderId, 'Rejected');
+        handleOrderAction(orderId, 'reject-confirm');
     }
 }
 
@@ -409,7 +519,7 @@ function getStatusClass(status) {
     status = status.toLowerCase();
     // API Statuses
     if (['completed', 'approved', 'confirmed'].includes(status)) return 'success';
-    if (['pending', 'pricingresponded', 'accepted'].includes(status)) return 'warning';
+    if (['pending', 'accepted'].includes(status)) return 'warning';
     if (['rejected', 'cancelled'].includes(status)) return 'danger';
     return 'primary';
 }
@@ -438,26 +548,187 @@ function updatePharmacyStatus() {
         statusText.style.color = "#EF4444";
         console.log('Pharmacy is now CLOSED');
     }
+}/**
+ * Render Branches Management
+ */
+function renderBranches() {
+    const container = document.getElementById('branches-container');
+    if (!container) return;
+
+    // Mock data if not loaded
+    if (!window.mockBranches) {
+        window.mockBranches = [
+            { id: 'BR-01', name: 'Main Branch - Cairo', phone: '01011223344', address: '123 Tahrir St, Cairo', status: 'Active' },
+            { id: 'BR-02', name: 'Giza Branch', phone: '01155667788', address: '45 Pyramids Rd, Giza', status: 'Active' }
+        ];
+    }
+
+    container.innerHTML = window.mockBranches.map(br => `
+        <div class="card branch-card">
+            <div class="branch-card-header">
+                <h3>${br.name}</h3>
+                <span class="status-badge success">Active</span>
+            </div>
+            <div class="branch-card-body">
+                <p><i class='bx bx-phone'></i> ${br.phone}</p>
+                <p><i class='bx bx-map'></i> ${br.address}</p>
+            </div>
+            <div class="branch-card-actions">
+                <button class="action-btn view" onclick="alert('Viewing branch ${br.id}')">View Details</button>
+                <button class="action-btn reject" onclick="alert('Closing branch ${br.id}')">Deactivate</button>
+            </div>
+        </div>
+    `).join('') || '<p style="text-align:center; grid-column: 1/-1;">No branches found. Add your first branch!</p>';
+}
+
+/**
+ * Branch Modal Logic
+ */
+function openAddBranchModal() {
+    document.getElementById('branch-modal').style.display = 'block';
+}
+
+function closeAddBranchModal() {
+    document.getElementById('branch-modal').style.display = 'none';
+    document.getElementById('add-branch-form').reset();
+}
+
+/**
+ * Handle Branch Creation
+ */
+async function handleAuthAddBranch(event) {
+    event.preventDefault();
+
+    const name    = document.getElementById('branch-name').value;
+    const city    = document.getElementById('branch-city').value;   // Required by backend
+    const phone   = document.getElementById('branch-phone').value;
+    const address = document.getElementById('branch-address').value;
+    const lat     = document.getElementById('branch-lat').value;
+    const lng     = document.getElementById('branch-lng').value;
+
+    const userInfo   = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const pharmacyId = userInfo.pharmacyId;
+
+    if (!pharmacyId) {
+        alert('Cannot add branch: pharmacy ID not found. Please re-login.');
+        return;
+    }
+
+    const branchData = { name, city, address };
+    if (phone)  branchData.phone     = phone;
+    if (lat)    branchData.latitude  = parseFloat(lat);
+    if (lng)    branchData.longitude = parseFloat(lng);
+
+    const result = await apiAddBranch(pharmacyId, branchData);
+
+    if (result.success) {
+        renderBranches();
+        closeAddBranchModal();
+        alert('Branch added successfully!');
+    } else {
+        alert('Failed to add branch: ' + (result.message || result.error || 'Unknown error'));
+    }
+}
+
+/**
+ * Preview selected pharmacy logo and store the File for upload
+ */
+function previewPharmacyLogo(event) {
+    const input = event.target;
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        window.pendingLogoFile = file;   // The actual File object — sent to /api/files/upload
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profile-logo-preview').src = e.target.result;
+            window.pendingLogoData = e.target.result; // base64 preview only
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+/**
+ * Initialize Settings section — populate form from stored user_info
+ */
+function initSettings() {
+    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const nameEl   = document.getElementById('set-pharmacy-name');
+    if (nameEl && userInfo.name) nameEl.value = userInfo.name;
+
+    const checkbox = document.getElementById('pharmacy-status-check');
+    if (checkbox && typeof userInfo.isOpen === 'boolean') {
+        checkbox.checked = userInfo.isOpen;
+        updatePharmacyStatus();
+    }
 }
 
 /**
  * Save Pharmacy Profile Settings
+ * Calls PUT /api/v1/pharmacies/profile (backend resolves pharmacy via token OwnerId).
+ * If a new logo was selected, uploads it first via POST /api/files/upload then saves the URL.
  */
-function savePharmacyProfile(event) {
+async function savePharmacyProfile(event) {
     event.preventDefault();
-    
-    const name = document.getElementById('set-pharmacy-name').value;
-    const gov = document.getElementById('set-pharmacy-gov').value;
-    const phone = document.getElementById('set-pharmacy-phone').value;
+
+    const name    = document.getElementById('set-pharmacy-name').value;
+    const gov     = document.getElementById('set-pharmacy-gov').value;
     const address = document.getElementById('set-pharmacy-address').value;
-    const hours = document.getElementById('set-pharmacy-hours').value;
-    
-    // In a real app, send this to API
-    console.log('Saving Profile:', { name, gov, phone, address, hours });
-    
-    // Update Header Name
-    const headerName = document.querySelector('.profile-info .name');
-    if (headerName) headerName.textContent = name;
-    
-    alert('Pharmacy profile updated successfully and will be visible to patients!');
+    const hours   = document.getElementById('set-pharmacy-hours').value;
+    const isOpen  = document.getElementById('pharmacy-status-check').checked;
+    const btn     = event.target.querySelector('button[type="submit"]');
+
+    btn.disabled    = true;
+    btn.textContent = 'Saving...';
+
+    try {
+        let logoUrl = '';
+
+        // Step 1: Upload new logo if the user selected one
+        if (window.pendingLogoFile) {
+            const uploadResult = await apiUploadLogo(window.pendingLogoFile);
+            if (!uploadResult.success) {
+                alert('Logo upload failed: ' + (uploadResult.message || 'Please try again.'));
+                return;
+            }
+            logoUrl = uploadResult.data?.url || uploadResult.data?.fileUrl || '';
+            window.pendingLogoFile = null;
+        }
+
+        // Step 2: Update pharmacy profile
+        const profileData = {
+            name,
+            governorate: gov,
+            address,
+            workingHoursDescription: hours,
+            isOpen,
+            logoUrl
+        };
+
+        const result = await apiUpdatePharmacyProfile(profileData);
+
+        if (result.success) {
+            // Update topbar name
+            const headerName = document.querySelector('.profile-info .name');
+            if (headerName) headerName.textContent = name;
+
+            // Update topbar avatar
+            const headerImg = document.querySelector('.profile img');
+            if (headerImg) {
+                const src = logoUrl || window.pendingLogoData ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff`;
+                headerImg.src = src;
+            }
+
+            // Persist updated info locally
+            const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+            localStorage.setItem('user_info', JSON.stringify({ ...userInfo, name, isOpen }));
+
+            alert('Pharmacy profile updated successfully!');
+        } else {
+            alert('Save failed: ' + (result.message || 'Unknown error'));
+        }
+    } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Save Changes';
+    }
 }

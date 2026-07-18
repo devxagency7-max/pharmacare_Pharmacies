@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacies Login - Pharma Care</title>
+    <title>Pharmacies Login - Tamenny</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,20 +20,20 @@
         <div class="login-card">
             <!-- Logo Icon -->
             <div class="login-logo-icon">
-                <i class='bx bx-plus-medical'></i>
+                <img src="WhatsApp%20Image%202026-04-24%20at%204.15.34%20PM.jpeg" alt="Pharma Care Logo">
             </div>
 
             <!-- Header Text -->
-            <h2 class="login-title">Pharma Care</h2>
-            <p class="login-subtitle">Pharmacist Portal Login</p>
+            <h2 class="login-title">Tamenny</h2>
+            <p class="login-subtitle">Pharmacy Login</p>
 
             <!-- Login Form -->
-            <form action="index.html" class="login-form">
+            <form id="login-form" class="login-form" onsubmit="handleLogin(event)">
                 <div class="input-group">
                     <label>Pharmacy Email</label>
                     <div class="input-wrapper">
                         <i class='bx bx-envelope'></i>
-                        <input type="email" placeholder="pharmacist@example.com" required>
+                        <input type="email" id="login-email" placeholder="Enter Your Email" required>
                     </div>
                 </div>
 
@@ -41,7 +41,7 @@
                     <label>Password</label>
                     <div class="input-wrapper">
                         <i class='bx bx-lock-alt'></i>
-                        <input type="password" placeholder="••••••••" required>
+                        <input type="password" id="login-password" placeholder="••••••••" required>
                     </div>
                 </div>
 
@@ -61,6 +61,80 @@
             </div>
         </div>
     </div>
+
+    <!-- Auth API Helper -->
+    <script src="js/api/auth.js"></script>
+    <script>
+        // Firebase Identity Toolkit REST API (no SDK needed)
+        const FIREBASE_API_KEY = 'AIzaSyCXMY-UDoD36xHZEpBUxstflXHzkA2EAe8';
+        const FIREBASE_LOGIN_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const btn = event.target.querySelector('button');
+
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                // Step 1: Authenticate with Firebase via REST API
+                const firebaseRes = await fetch(FIREBASE_LOGIN_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, returnSecureToken: true })
+                });
+
+                const firebaseData = await firebaseRes.json();
+
+                if (!firebaseRes.ok) {
+                    const msg = firebaseData?.error?.message || 'Authentication failed';
+                    throw new Error(msg);
+                }
+
+                const token = firebaseData.idToken;
+                if (!token) throw new Error('No token received from Firebase.');
+
+                // Step 2: Sync with Backend
+                const syncResult = await apiSyncUser(token, {
+                    email: firebaseData.email,
+                    name: firebaseData.displayName || 'Pharmacist',
+                    displayName: firebaseData.displayName || 'Pharmacist',
+                    phoneNumber: ''
+                });
+
+                if (syncResult.success) {
+                    // Step 3: Store token & redirect
+                    localStorage.setItem('firebase_token', token);
+                    localStorage.setItem('user_info', JSON.stringify(syncResult.data));
+                    window.location.href = 'index.html';
+                } else {
+                    const errMsg = syncResult.errors?.[0] || 'Unknown backend error';
+                    alert('Backend Sync Failed: ' + errMsg);
+                }
+
+            } catch (error) {
+                console.error('Login Error:', error);
+
+                let friendlyMsg = 'Login failed. Please check your credentials.';
+                if (error.message.includes('EMAIL_NOT_FOUND') || error.message.includes('INVALID_LOGIN_CREDENTIALS')) {
+                    friendlyMsg = 'Email not found or invalid credentials.';
+                } else if (error.message.includes('INVALID_PASSWORD')) {
+                    friendlyMsg = 'Incorrect password.';
+                } else if (error.message.includes('USER_DISABLED')) {
+                    friendlyMsg = 'This account has been disabled.';
+                } else if (error.message.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+                    friendlyMsg = 'Too many failed attempts. Please try again later.';
+                }
+
+                alert(friendlyMsg);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Sign In to Dashboard';
+            }
+        }
+    </script>
 </body>
 
 </html>

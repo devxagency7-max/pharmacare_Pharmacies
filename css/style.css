@@ -1302,3 +1302,77 @@ input:checked + .slider-large:before { transform: translateX(26px); }
 .danger-text {
     color: #EF4444 !important;
 }
+
+/* Branch Management */
+.branches-actions { margin-bottom: 25px; display: flex; justify-content: flex-end; }
+.branches-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+.branch-card { border: 1px solid rgba(79, 143, 234, 0.1); transition: var(--transition); }
+.branch-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+.branch-card-header { padding: 20px 25px; border-bottom: 1px solid rgba(79, 143, 234, 0.05); display: flex; justify-content: space-between; align-items: center; }
+.branch-card-header h3 { font-size: 16px; font-weight: 600; }
+.branch-card-body { padding: 20px 25px; }
+.branch-card-body p { font-size: 14px; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.branch-card-body p i { font-size: 18px; color: var(--primary); }
+.branch-card-actions { padding: 15px 25px; background: #F9FAFD; display: flex; gap: 10px; justify-content: flex-end; }
+.loading-placeholder { padding: 40px; text-align: center; color: var(--text-muted); font-style: italic; }
+
+/* ==========================================================================
+   Logo Upload Styling
+   ========================================================================== */
+.logo-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(79, 143, 234, 0.08);
+}
+
+.logo-preview {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.logo-preview img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: var(--shadow-md);
+}
+
+.upload-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid #fff;
+    transition: var(--transition);
+}
+
+.upload-badge:hover {
+    background: var(--primary-dark);
+    transform: scale(1.1);
+}
+
+.logo-upload-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.logo-upload-info p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
