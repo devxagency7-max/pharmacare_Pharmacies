@@ -2,7 +2,7 @@
  * auth.js - API Client for Authentication & User Sync
  */
 
-const BASE_URL = 'http://148.230.114.124:8080/api/v1';
+const BASE_URL = 'http://204.168.149.185/api/v1';
 
 /**
  * Sync Firebase User with Backend

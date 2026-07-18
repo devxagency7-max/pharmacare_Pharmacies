@@ -159,7 +159,7 @@ The default landing page for a non-owner is **Prescriptions**. For a `PharmacyOw
 ### 13. File Upload Route — corrected
 
 **Your backend:** File upload is at `/api/files/upload` — **no `/v1/` version segment**.
-**Fix applied:** `FILES_URL` in `pharmacies.js` is set to `http://148.230.114.124:8080/api/files` (not `/api/v1/files`).
+**Fix applied:** `FILES_URL` in `pharmacies.js` is set to `http://204.168.149.185/api/files` (not `/api/v1/files`).
 
 ---
 

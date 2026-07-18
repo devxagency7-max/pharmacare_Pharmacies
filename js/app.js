@@ -83,7 +83,7 @@ async function renderReports() {
     const userInfo   = JSON.parse(localStorage.getItem('user_info') || '{}');
     const pharmacyId = userInfo.pharmacyId;
 
-    const BASE = 'http://148.230.114.124:8080/api/v1';
+    const BASE = 'http://204.168.149.185/api/v1';
     const token = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}` };
 

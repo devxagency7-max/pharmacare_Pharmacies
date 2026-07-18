@@ -1,7 +1,7 @@
 /**
  * pharmacies.js - API Client for Pharmacy & Branch Management
  *
- * Base URL: http://148.230.114.124:8080/api/v1
+ * Base URL: http://204.168.149.185/api/v1
  * Auth:     Bearer firebase_token (from localStorage)
  *
  * NOTE on routes confirmed from backend source:
@@ -12,8 +12,8 @@
  *   - Branch toggle   → PUT  /pharmacies/branches/{branchId}/status
  */
 
-const BASE_URL = 'http://148.230.114.124:8080/api/v1';
-const FILES_URL = 'http://148.230.114.124:8080/api/files';
+const BASE_URL = 'http://204.168.149.185/api/v1';
+const FILES_URL = 'http://204.168.149.185/api/files';
 
 function getHeaders() {
     const token = localStorage.getItem('firebase_token');
