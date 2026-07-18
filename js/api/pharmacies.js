@@ -37,7 +37,7 @@ async function apiGetPharmacyProfile(pharmacyId) {
             method: 'GET',
             headers: _pharmHeaders()
         });
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error fetching pharmacy profile:', error);
         return { success: false, error: error.message };
@@ -63,7 +63,7 @@ async function apiUpdatePharmacyProfile(profileData) {
             headers: _pharmHeaders(),
             body: JSON.stringify(profileData)
         });
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error updating pharmacy profile:', error);
         return { success: false, error: error.message };
@@ -108,7 +108,7 @@ async function apiUploadLogo(file) {
             headers: _pharmAuthHeader(),
             body: formData
         });
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error uploading logo:', error);
         return { success: false, error: error.message };
@@ -128,7 +128,7 @@ async function apiGetPharmacyBranches(pharmacyId, page = 1, pageSize = 20) {
             `${API_BASE}/pharmacies/${pharmacyId}/branches?page=${page}&pageSize=${pageSize}`,
             { method: 'GET', headers: _pharmHeaders() }
         );
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error fetching branches:', error);
         return { success: false, error: error.message };
@@ -144,7 +144,7 @@ async function apiGetBranchDetails(branchId) {
             method: 'GET',
             headers: _pharmHeaders()
         });
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error fetching branch details:', error);
         return { success: false, error: error.message };
@@ -171,7 +171,7 @@ async function apiAddBranch(pharmacyId, branchData) {
             headers: _pharmHeaders(),
             body: JSON.stringify(branchData)
         });
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error adding branch:', error);
         return { success: false, error: error.message };
@@ -193,7 +193,7 @@ async function apiSetBranchStatus(branchId, isActive) {
             headers: _pharmHeaders(),
             body: JSON.stringify({ isActive })
         });
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error updating branch status:', error);
         return { success: false, error: error.message };
@@ -214,7 +214,7 @@ async function apiGetGovernorates() {
             method: 'GET',
             headers: _pharmHeaders()
         });
-        return await response.json();
+        return await safeJson(response);
     } catch (error) {
         console.error('Error fetching governorates:', error);
         return { success: false, error: error.message };

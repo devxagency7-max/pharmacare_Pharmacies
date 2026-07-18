@@ -1,9 +1,7 @@
 /**
  * notifications.js - API Client for Notifications
+ * API_BASE, safeJson come from config.js
  */
-
-// API_BASE comes from js/api/config.js
-const NOTIF_BASE = API_BASE;
 
 function _notifHeaders() {
     const token = localStorage.getItem('firebase_token');
@@ -12,10 +10,10 @@ function _notifHeaders() {
 
 async function apiGetNotifications(page = 1, pageSize = 20) {
     try {
-        const res = await fetch(`${NOTIF_BASE}/notifications?page=${page}&pageSize=${pageSize}`, {
+        const response = await fetch(`${API_BASE}/notifications?page=${page}&pageSize=${pageSize}`, {
             method: 'GET', headers: _notifHeaders()
         });
-        return await res.json();
+        return await safeJson(response);
     } catch (e) {
         console.error('apiGetNotifications:', e);
         return { success: false, error: e.message };
@@ -24,10 +22,10 @@ async function apiGetNotifications(page = 1, pageSize = 20) {
 
 async function apiGetUnreadCount() {
     try {
-        const res = await fetch(`${NOTIF_BASE}/notifications/unread-count`, {
+        const response = await fetch(`${API_BASE}/notifications/unread-count`, {
             method: 'GET', headers: _notifHeaders()
         });
-        return await res.json();
+        return await safeJson(response);
     } catch (e) {
         console.error('apiGetUnreadCount:', e);
         return { success: false, error: e.message };
@@ -36,10 +34,10 @@ async function apiGetUnreadCount() {
 
 async function apiMarkNotificationRead(id) {
     try {
-        const res = await fetch(`${NOTIF_BASE}/notifications/${id}/read`, {
+        const response = await fetch(`${API_BASE}/notifications/${id}/read`, {
             method: 'PUT', headers: _notifHeaders()
         });
-        return await res.json();
+        return await safeJson(response);
     } catch (e) {
         console.error('apiMarkNotificationRead:', e);
         return { success: false, error: e.message };

@@ -16,6 +16,12 @@ let _pollInterval = null;
 // ─────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Guard: redirect to login if no token
+    if (!localStorage.getItem('firebase_token')) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     const sidebar       = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const navItems      = document.querySelectorAll('.nav-item');
@@ -85,6 +91,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadCurrentUser() {
     const result = await apiGetMe();
+    // Token expired or revoked — force re-login
+    if (result.status === 401 || result.status === 403) {
+        logout();
+        return;
+    }
     if (!result.success || !result.data) return;
 
     const d = result.data;
