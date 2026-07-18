@@ -2,7 +2,7 @@
  * orders.js - API Client for Order Management
  */
 
-const BASE_URL = 'http://204.168.149.185/api/v1';
+// API_BASE comes from js/api/config.js
 
 /**
  * Helper to get headers with Auth
@@ -20,7 +20,7 @@ function getHeaders() {
  */
 async function apiGetBranchOrders(branchId, status = '') {
     try {
-        let url = `${BASE_URL}/orders/branch/${branchId}`;
+        let url = `${API_BASE}/orders/branch/${branchId}`;
         if (status) url += `?status=${status}`;
         
         const response = await fetch(url, {
@@ -40,7 +40,7 @@ async function apiGetBranchOrders(branchId, status = '') {
  */
 async function apiRespondToOrder(orderId, action, notes = '') {
     try {
-        const response = await fetch(`${BASE_URL}/orders/${orderId}/respond`, {
+        const response = await fetch(`${API_BASE}/orders/${orderId}/respond`, {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify({
@@ -62,7 +62,7 @@ async function apiRespondToOrder(orderId, action, notes = '') {
  */
 async function apiCompleteOrder(orderId) {
     try {
-        const response = await fetch(`${BASE_URL}/orders/${orderId}/complete`, {
+        const response = await fetch(`${API_BASE}/orders/${orderId}/complete`, {
             method: 'POST',
             headers: getHeaders()
         });
@@ -79,7 +79,7 @@ async function apiCompleteOrder(orderId) {
  */
 async function apiGetOrderDetails(orderId) {
     try {
-        const response = await fetch(`${BASE_URL}/orders/${orderId}`, {
+        const response = await fetch(`${API_BASE}/orders/${orderId}`, {
             method: 'GET',
             headers: getHeaders()
         });

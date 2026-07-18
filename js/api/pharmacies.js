@@ -12,18 +12,14 @@
  *   - Branch toggle   → PUT  /pharmacies/branches/{branchId}/status
  */
 
-const BASE_URL = 'http://204.168.149.185/api/v1';
-const FILES_URL = 'http://204.168.149.185/api/files';
+// API_BASE and FILES_BASE come from js/api/config.js
 
-function getHeaders() {
+function _pharmHeaders() {
     const token = localStorage.getItem('firebase_token');
-    return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    };
+    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 }
 
-function getAuthHeader() {
+function _pharmAuthHeader() {
     const token = localStorage.getItem('firebase_token');
     return { 'Authorization': `Bearer ${token}` };
 }
@@ -37,9 +33,9 @@ function getAuthHeader() {
  */
 async function apiGetPharmacyProfile(pharmacyId) {
     try {
-        const response = await fetch(`${BASE_URL}/pharmacies/${pharmacyId}`, {
+        const response = await fetch(`${API_BASE}/pharmacies/${pharmacyId}`, {
             method: 'GET',
-            headers: getHeaders()
+            headers: _pharmHeaders()
         });
         return await response.json();
     } catch (error) {
@@ -62,9 +58,9 @@ async function apiGetPharmacyProfile(pharmacyId) {
  */
 async function apiUpdatePharmacyProfile(profileData) {
     try {
-        const response = await fetch(`${BASE_URL}/pharmacies/profile`, {
+        const response = await fetch(`${API_BASE}/pharmacies/profile`, {
             method: 'PUT',
-            headers: getHeaders(),
+            headers: _pharmHeaders(),
             body: JSON.stringify(profileData)
         });
         return await response.json();
@@ -107,9 +103,9 @@ async function apiUploadLogo(file) {
         formData.append('file', file);
         formData.append('fileType', 'Other');
 
-        const response = await fetch(`${FILES_URL}/upload`, {
+        const response = await fetch(`${FILES_BASE}/upload`, {
             method: 'POST',
-            headers: getAuthHeader(),
+            headers: _pharmAuthHeader(),
             body: formData
         });
         return await response.json();
@@ -129,8 +125,8 @@ async function apiUploadLogo(file) {
 async function apiGetPharmacyBranches(pharmacyId, page = 1, pageSize = 20) {
     try {
         const response = await fetch(
-            `${BASE_URL}/pharmacies/${pharmacyId}/branches?page=${page}&pageSize=${pageSize}`,
-            { method: 'GET', headers: getHeaders() }
+            `${API_BASE}/pharmacies/${pharmacyId}/branches?page=${page}&pageSize=${pageSize}`,
+            { method: 'GET', headers: _pharmHeaders() }
         );
         return await response.json();
     } catch (error) {
@@ -144,9 +140,9 @@ async function apiGetPharmacyBranches(pharmacyId, page = 1, pageSize = 20) {
  */
 async function apiGetBranchDetails(branchId) {
     try {
-        const response = await fetch(`${BASE_URL}/pharmacies/branches/${branchId}`, {
+        const response = await fetch(`${API_BASE}/pharmacies/branches/${branchId}`, {
             method: 'GET',
-            headers: getHeaders()
+            headers: _pharmHeaders()
         });
         return await response.json();
     } catch (error) {
@@ -170,9 +166,9 @@ async function apiGetBranchDetails(branchId) {
  */
 async function apiAddBranch(pharmacyId, branchData) {
     try {
-        const response = await fetch(`${BASE_URL}/pharmacies/${pharmacyId}/branches`, {
+        const response = await fetch(`${API_BASE}/pharmacies/${pharmacyId}/branches`, {
             method: 'POST',
-            headers: getHeaders(),
+            headers: _pharmHeaders(),
             body: JSON.stringify(branchData)
         });
         return await response.json();
@@ -192,9 +188,9 @@ async function apiAddBranch(pharmacyId, branchData) {
  */
 async function apiSetBranchStatus(branchId, isActive) {
     try {
-        const response = await fetch(`${BASE_URL}/pharmacies/branches/${branchId}/status`, {
+        const response = await fetch(`${API_BASE}/pharmacies/branches/${branchId}/status`, {
             method: 'PUT',
-            headers: getHeaders(),
+            headers: _pharmHeaders(),
             body: JSON.stringify({ isActive })
         });
         return await response.json();
@@ -214,9 +210,9 @@ async function apiSetBranchStatus(branchId, isActive) {
  */
 async function apiGetGovernorates() {
     try {
-        const response = await fetch(`${BASE_URL}/pharmacies/governorates`, {
+        const response = await fetch(`${API_BASE}/pharmacies/governorates`, {
             method: 'GET',
-            headers: getHeaders()
+            headers: _pharmHeaders()
         });
         return await response.json();
     } catch (error) {

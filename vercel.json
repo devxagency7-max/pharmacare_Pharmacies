@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/login.html" }
+    { "source": "/backend/:path*",       "destination": "http://204.168.149.185/api/v1/:path*" },
+    { "source": "/backend-files/:path*", "destination": "http://204.168.149.185/api/files/:path*" },
+    { "source": "/",                     "destination": "/login.html" }
   ]
 }
+

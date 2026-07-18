@@ -149,7 +149,7 @@ async function initDashboard() {
 
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}` };
-    const BASE    = 'http://204.168.149.185/api/v1';
+    const BASE    = API_BASE;
 
     try {
         const [trendRes, topRes] = await Promise.all([
@@ -204,7 +204,7 @@ async function loadDashboardStats() {
 
     if (!_branchId) return;
 
-    const BASE    = 'http://204.168.149.185/api/v1';
+    const BASE    = API_BASE;
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}` };
 
@@ -246,7 +246,7 @@ async function renderOrders(showLoading = true) {
         tableHistory.innerHTML    = '<tr><td colspan="4" style="text-align:center">Loading...</td></tr>';
     }
 
-    const BASE    = 'http://204.168.149.185/api/v1';
+    const BASE    = API_BASE;
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}` };
 
@@ -311,7 +311,7 @@ async function renderOrders(showLoading = true) {
 }
 
 async function handleOrderAction(orderId, action, notes = '') {
-    const BASE    = 'http://204.168.149.185/api/v1';
+    const BASE    = API_BASE;
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 
@@ -657,7 +657,7 @@ async function renderReports() {
     const userInfo   = JSON.parse(localStorage.getItem('user_info') || '{}');
     const pharmacyId = _pharmacyId || userInfo.pharmacyId;
 
-    const BASE    = 'http://204.168.149.185/api/v1';
+    const BASE    = API_BASE;
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}` };
 

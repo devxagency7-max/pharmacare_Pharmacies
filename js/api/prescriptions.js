@@ -5,7 +5,8 @@
  * /review does NOT change Prescription.Status — never use it.
  */
 
-const RX_BASE = 'http://204.168.149.185/api/v1';
+// API_BASE comes from js/api/config.js
+const RX_BASE = API_BASE;
 
 function _rxHeaders() {
     const token = localStorage.getItem('firebase_token');

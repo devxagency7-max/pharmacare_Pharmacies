@@ -1,8 +1,7 @@
 /**
  * auth.js - API Client for Authentication & User Sync
+ * Base URL comes from js/api/config.js (API_BASE)
  */
-
-const BASE_URL = 'http://204.168.149.185/api/v1';
 
 /**
  * Sync Firebase User with Backend
@@ -11,7 +10,7 @@ const BASE_URL = 'http://204.168.149.185/api/v1';
  */
 async function apiSyncUser(firebaseToken, userData) {
     try {
-        const response = await fetch(`${BASE_URL}/users/sync`, {
+        const response = await fetch(`${API_BASE}/users/sync`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${firebaseToken}`,
@@ -32,7 +31,7 @@ async function apiSyncUser(firebaseToken, userData) {
 async function apiGetMe() {
     const token = localStorage.getItem('firebase_token');
     try {
-        const response = await fetch(`${BASE_URL}/users/me`, {
+        const response = await fetch(`${API_BASE}/users/me`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`

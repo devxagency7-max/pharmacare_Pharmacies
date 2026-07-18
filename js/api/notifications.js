@@ -2,7 +2,8 @@
  * notifications.js - API Client for Notifications
  */
 
-const NOTIF_BASE = 'http://204.168.149.185/api/v1';
+// API_BASE comes from js/api/config.js
+const NOTIF_BASE = API_BASE;
 
 function _notifHeaders() {
     const token = localStorage.getItem('firebase_token');
