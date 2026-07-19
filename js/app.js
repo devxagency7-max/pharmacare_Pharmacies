@@ -1009,22 +1009,21 @@ async function savePharmacyProfile(event) {
         const result = await apiUpdatePharmacyProfile(profilePayload);
 
         if (result.success) {
-            // Immediately show preview image in topbar (from local FileReader data)
             const headerImg  = document.querySelector('.profile img');
             const headerName = document.querySelector('.profile-info .name');
 
             if (headerName) headerName.textContent = name;
 
+            // Show the local preview in the topbar — permanent until next page load
             if (headerImg && window.pendingLogoData) {
+                headerImg.onerror = null; // disable any old onerror before changing src
                 headerImg.src = window.pendingLogoData;
-                window.pendingLogoData = null;
             }
+            window.pendingLogoData = null;
+            window.pendingLogoFile = null;
 
             const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
             localStorage.setItem('user_info', JSON.stringify({ ...userInfo, name, isOpen }));
-
-            // Reload full profile from backend to get the fresh R2 signed URL for the topbar
-            setTimeout(() => loadCurrentUser(), 800);
 
             alert('Pharmacy profile updated successfully!');
         } else {
