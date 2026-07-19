@@ -112,7 +112,7 @@
                     localStorage.setItem('user_info', JSON.stringify(syncResult.data));
                     window.location.href = 'index.html';
                 } else {
-                    const errMsg = syncResult.errors?.[0] || 'Unknown backend error';
+                    const errMsg = syncResult.error || syncResult.message || 'Unknown backend error';
                     alert('Backend Sync Failed: ' + errMsg);
                 }
 

@@ -164,8 +164,8 @@ async function initDashboard() {
 
     try {
         const [trendRes, topRes] = await Promise.all([
-            fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${_pharmacyId}&months=7`, { headers }).then(r => safeJson(r)),
-            fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${_pharmacyId}&limit=3`, { headers }).then(r => safeJson(r))
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${_pharmacyId}&months=7`, { headers })),
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${_pharmacyId}&limit=3`, { headers }))
         ]);
 
         if (trendRes.success) {
@@ -220,7 +220,7 @@ async function loadDashboardStats() {
     const headers = { 'Authorization': `Bearer ${token}` };
 
     try {
-        const res = await fetch(`${BASE}/orders/summary?branchId=${_branchId}`, { headers }).then(r => safeJson(r));
+        const res = await safeJson(await fetch(`${BASE}/orders/summary?branchId=${_branchId}`, { headers }));
         if (!res.success) return;
 
         const d = res.data;
@@ -262,9 +262,9 @@ async function renderOrders(showLoading = true) {
     const headers = { 'Authorization': `Bearer ${token}` };
 
     try {
-        const res = await fetch(
+        const res = await safeJson(await fetch(
             `${BASE}/orders/branch/${bid}?pageSize=100&sortDirection=desc`, { headers }
-        ).then(r => safeJson(r));
+        ));
 
         if (!res.success) {
             tableNew.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#EF4444">${res.message || 'Failed to load orders'}</td></tr>`;
@@ -693,9 +693,9 @@ async function renderReports() {
 
     try {
         const [srcRes, trendRes, topRes] = await Promise.all([
-            fetch(`${BASE}/pharmacy/dashboard/order-source?pharmacyId=${pharmacyId}`, { headers }).then(r => safeJson(r)),
-            fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${pharmacyId}&months=3`, { headers }).then(r => safeJson(r)),
-            fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pharmacyId}&limit=5`, { headers }).then(r => safeJson(r))
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/order-source?pharmacyId=${pharmacyId}`, { headers })),
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${pharmacyId}&months=3`, { headers })),
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pharmacyId}&limit=5`, { headers }))
         ]);
 
         const ctxSource = document.getElementById('orderSourceChart');
@@ -736,7 +736,7 @@ async function renderReports() {
             if (h) h.textContent = 'Top Requested Medications';
         }
 
-        const summaryRes = await fetch(`${BASE}/pharmacy/dashboard/summary?pharmacyId=${pharmacyId}`, { headers }).then(r => safeJson(r));
+        const summaryRes = await safeJson(await fetch(`${BASE}/pharmacy/dashboard/summary?pharmacyId=${pharmacyId}`, { headers }));
         if (summaryRes.success) {
             const d = summaryRes.data;
             const totalEl = document.querySelector('.summary-item:nth-child(1) h2');
@@ -747,7 +747,7 @@ async function renderReports() {
             if (rejEl)   rejEl.textContent   = d.rejectedOrdersCount + ' Orders';
         }
 
-        const notesRes = await fetch(`${BASE}/pharmacy/dashboard/rejection-notes?pharmacyId=${pharmacyId}&limit=10`, { headers }).then(r => safeJson(r));
+        const notesRes = await safeJson(await fetch(`${BASE}/pharmacy/dashboard/rejection-notes?pharmacyId=${pharmacyId}&limit=10`, { headers }));
         if (notesRes.success) {
             const list = document.getElementById('rejection-notes-list');
             if (list) {
