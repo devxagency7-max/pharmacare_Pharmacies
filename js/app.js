@@ -803,12 +803,17 @@ async function renderReports() {
         const summaryRes = await safeJson(await fetch(`${BASE}/pharmacy/dashboard/summary?pharmacyId=${pharmacyId}`, { headers }));
         if (summaryRes.success) {
             const d = summaryRes.data;
-            const totalEl = document.querySelector('.summary-item:nth-child(1) h2');
-            const rateEl  = document.querySelector('.summary-item:nth-child(2) h2');
-            const rejEl   = document.querySelector('.summary-item:nth-child(3) h2');
-            if (totalEl) totalEl.textContent = d.totalRequests.toLocaleString();
-            if (rateEl)  rateEl.textContent  = d.successRate.toFixed(1) + '%';
-            if (rejEl)   rejEl.textContent   = d.rejectedOrdersCount + ' Orders';
+            const totalEl = document.getElementById('rpt-total-requests');
+            const rateEl  = document.getElementById('rpt-success-rate');
+            const rejEl   = document.getElementById('rpt-rejected-orders');
+            if (totalEl) totalEl.textContent = (d.totalRequests ?? 0).toLocaleString();
+            if (rateEl)  rateEl.textContent  = ((d.successRate ?? 0).toFixed(1)) + '%';
+            if (rejEl)   rejEl.textContent   = (d.rejectedOrdersCount ?? 0) + ' Orders';
+        } else {
+            ['rpt-total-requests', 'rpt-success-rate', 'rpt-rejected-orders'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '—';
+            });
         }
 
         const notesRes = await safeJson(await fetch(`${BASE}/pharmacy/dashboard/rejection-notes?pharmacyId=${pharmacyId}&limit=10`, { headers }));
