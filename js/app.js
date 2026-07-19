@@ -164,8 +164,8 @@ async function initDashboard() {
 
     try {
         const [trendRes, topRes] = await Promise.all([
-            fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${_pharmacyId}&months=7`, { headers }).then(r => r.json()),
-            fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${_pharmacyId}&limit=3`, { headers }).then(r => r.json())
+            fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${_pharmacyId}&months=7`, { headers }).then(r => safeJson(r)),
+            fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${_pharmacyId}&limit=3`, { headers }).then(r => safeJson(r))
         ]);
 
         if (trendRes.success) {
@@ -220,7 +220,7 @@ async function loadDashboardStats() {
     const headers = { 'Authorization': `Bearer ${token}` };
 
     try {
-        const res = await fetch(`${BASE}/orders/summary?branchId=${_branchId}`, { headers }).then(r => r.json());
+        const res = await fetch(`${BASE}/orders/summary?branchId=${_branchId}`, { headers }).then(r => safeJson(r));
         if (!res.success) return;
 
         const d = res.data;
@@ -264,7 +264,7 @@ async function renderOrders(showLoading = true) {
     try {
         const res = await fetch(
             `${BASE}/orders/branch/${bid}?pageSize=100&sortDirection=desc`, { headers }
-        ).then(r => r.json());
+        ).then(r => safeJson(r));
 
         if (!res.success) {
             tableNew.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#EF4444">${res.message || 'Failed to load orders'}</td></tr>`;
@@ -284,7 +284,7 @@ async function renderOrders(showLoading = true) {
                 <td>${(o.items || []).map(i => `${i.name} ×${i.quantity}`).join(', ') || '—'}</td>
                 <td>${formatTime(o.createdAt)}</td>
                 <td class="table-actions">
-                    <button class="action-btn approve" onclick="handleOrderAction('${o.id}','accept')">Accept</button>
+                    <button class="action-btn approve" onclick="promptAccept('${o.id}')">Accept</button>
                     <button class="action-btn reject"  onclick="promptReject('${o.id}')">Reject</button>
                 </td>
             </tr>
@@ -308,9 +308,11 @@ async function renderOrders(showLoading = true) {
                 <td>#${o.id.slice(0,8)}</td>
                 <td>${o.customerName}</td>
                 <td><span class="status-badge ${getStatusClass(o.orderStatus)}">${o.orderStatus}</span></td>
+                <td><span class="status-badge ${getPaymentClass(o.paymentStatus)}">${o.paymentStatus || '—'}</span></td>
+                <td>${o.finalPrice != null ? o.finalPrice + ' EGP' : '—'}</td>
                 <td>${formatTime(o.createdAt)}</td>
             </tr>
-        `).join('') || '<tr><td colspan="4" style="text-align:center">History is empty</td></tr>';
+        `).join('') || '<tr><td colspan="6" style="text-align:center">History is empty</td></tr>';
 
         // Update dashboard stat cards too
         loadDashboardStats();
@@ -321,7 +323,7 @@ async function renderOrders(showLoading = true) {
     }
 }
 
-async function handleOrderAction(orderId, action, notes = '') {
+async function handleOrderAction(orderId, action, notes = '', finalPrice = null) {
     const BASE    = API_BASE;
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -330,21 +332,21 @@ async function handleOrderAction(orderId, action, notes = '') {
         let res;
 
         if (action === 'accept') {
-            res = await fetch(`${BASE}/orders/${orderId}/respond`, {
+            res = await safeJson(await fetch(`${BASE}/orders/${orderId}/respond`, {
                 method: 'POST', headers,
-                body: JSON.stringify({ action: 'accept', notes })
-            }).then(r => r.json());
+                body: JSON.stringify({ action: 'accept', notes, finalPrice })
+            }));
 
         } else if (action === 'reject-confirm') {
-            res = await fetch(`${BASE}/orders/${orderId}/respond`, {
+            res = await safeJson(await fetch(`${BASE}/orders/${orderId}/respond`, {
                 method: 'POST', headers,
                 body: JSON.stringify({ action: 'reject', notes })
-            }).then(r => r.json());
+            }));
 
         } else if (action === 'complete') {
-            res = await fetch(`${BASE}/orders/${orderId}/complete`, {
+            res = await safeJson(await fetch(`${BASE}/orders/${orderId}/complete`, {
                 method: 'POST', headers
-            }).then(r => r.json());
+            }));
         }
 
         if (res && res.success) {
@@ -360,6 +362,17 @@ async function handleOrderAction(orderId, action, notes = '') {
         console.error('handleOrderAction error:', err);
         alert('Network error. Please check your connection.');
     }
+}
+
+function promptAccept(orderId) {
+    const priceStr = prompt('Enter the total price for the patient (EGP):', '');
+    if (priceStr === null) return; // cancelled
+    const price = parseFloat(priceStr);
+    if (isNaN(price) || price < 0) {
+        alert('Please enter a valid price (e.g. 150 or 75.50)');
+        return;
+    }
+    handleOrderAction(orderId, 'accept', '', price);
 }
 
 function promptReject(orderId) {
@@ -680,9 +693,9 @@ async function renderReports() {
 
     try {
         const [srcRes, trendRes, topRes] = await Promise.all([
-            fetch(`${BASE}/pharmacy/dashboard/order-source?pharmacyId=${pharmacyId}`, { headers }).then(r => r.json()),
-            fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${pharmacyId}&months=3`, { headers }).then(r => r.json()),
-            fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pharmacyId}&limit=5`, { headers }).then(r => r.json())
+            fetch(`${BASE}/pharmacy/dashboard/order-source?pharmacyId=${pharmacyId}`, { headers }).then(r => safeJson(r)),
+            fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${pharmacyId}&months=3`, { headers }).then(r => safeJson(r)),
+            fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pharmacyId}&limit=5`, { headers }).then(r => safeJson(r))
         ]);
 
         const ctxSource = document.getElementById('orderSourceChart');
@@ -723,7 +736,7 @@ async function renderReports() {
             if (h) h.textContent = 'Top Requested Medications';
         }
 
-        const summaryRes = await fetch(`${BASE}/pharmacy/dashboard/summary?pharmacyId=${pharmacyId}`, { headers }).then(r => r.json());
+        const summaryRes = await fetch(`${BASE}/pharmacy/dashboard/summary?pharmacyId=${pharmacyId}`, { headers }).then(r => safeJson(r));
         if (summaryRes.success) {
             const d = summaryRes.data;
             const totalEl = document.querySelector('.summary-item:nth-child(1) h2');
@@ -734,7 +747,7 @@ async function renderReports() {
             if (rejEl)   rejEl.textContent   = d.rejectedOrdersCount + ' Orders';
         }
 
-        const notesRes = await fetch(`${BASE}/pharmacy/dashboard/rejection-notes?pharmacyId=${pharmacyId}&limit=10`, { headers }).then(r => r.json());
+        const notesRes = await fetch(`${BASE}/pharmacy/dashboard/rejection-notes?pharmacyId=${pharmacyId}&limit=10`, { headers }).then(r => safeJson(r));
         if (notesRes.success) {
             const list = document.getElementById('rejection-notes-list');
             if (list) {
@@ -851,6 +864,14 @@ function getStatusClass(status) {
     if (['completed', 'approved'].includes(s)) return 'success';
     if (['pending', 'accepted'].includes(s))   return 'warning';
     if (['rejected', 'cancelled'].includes(s)) return 'danger';
+    return 'primary';
+}
+
+function getPaymentClass(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'paid')      return 'success';
+    if (s === 'pending')   return 'warning';
+    if (s === 'cancelled') return 'danger';
     return 'primary';
 }
 
