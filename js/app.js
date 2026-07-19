@@ -185,6 +185,15 @@ async function initDashboard() {
     const ctxSelling = document.getElementById('topSellingChart');
     if (!ctxTrend || !ctxSelling) return;
 
+    // Safely destroy existing charts using static Chart.getChart helper
+    ['ordersTrendChart', 'topSellingChart'].forEach(id => {
+        const canvas = document.getElementById(id);
+        if (canvas) {
+            const existing = Chart.getChart(canvas);
+            if (existing) existing.destroy();
+        }
+    });
+
     if (window._dashTrendChart)   { window._dashTrendChart.destroy();   window._dashTrendChart   = null; }
     if (window._dashSellingChart) { window._dashSellingChart.destroy(); window._dashSellingChart = null; }
 
@@ -203,6 +212,10 @@ async function initDashboard() {
         if (trendRes.success) {
             const labels = trendRes.data.map(p => `${p.month}/${p.year}`);
             const counts = trendRes.data.map(p => p.completedCount);
+
+            const existing = Chart.getChart(ctxTrend);
+            if (existing) existing.destroy();
+
             window._dashTrendChart = new Chart(ctxTrend.getContext('2d'), {
                 type: 'line',
                 data: {
@@ -223,6 +236,10 @@ async function initDashboard() {
         if (topRes.success && topRes.data.length) {
             const medLabels = topRes.data.map(m => m.name);
             const medCounts = topRes.data.map(m => m.orderItemCount);
+
+            const existing = Chart.getChart(ctxSelling);
+            if (existing) existing.destroy();
+
             window._dashSellingChart = new Chart(ctxSelling.getContext('2d'), {
                 type: 'doughnut',
                 data: {
@@ -717,6 +734,15 @@ async function renderReports() {
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}` };
 
+    // Safely destroy existing charts using static Chart.getChart helper
+    ['orderSourceChart', 'fulfillmentTrendChart', 'inventoryGapsChart'].forEach(id => {
+        const canvas = document.getElementById(id);
+        if (canvas) {
+            const existing = Chart.getChart(canvas);
+            if (existing) existing.destroy();
+        }
+    });
+
     ['sourceChart', 'trendChart', 'topMedsChart'].forEach(k => {
         if (window[k]) { window[k].destroy(); window[k] = null; }
     });
@@ -732,6 +758,9 @@ async function renderReports() {
 
         const ctxSource = document.getElementById('orderSourceChart');
         if (ctxSource && srcRes.success) {
+            const existing = Chart.getChart(ctxSource);
+            if (existing) existing.destroy();
+
             window.sourceChart = new Chart(ctxSource.getContext('2d'), {
                 type: 'pie',
                 data: {
@@ -744,6 +773,9 @@ async function renderReports() {
 
         const ctxTrend = document.getElementById('fulfillmentTrendChart');
         if (ctxTrend && trendRes.success) {
+            const existing = Chart.getChart(ctxTrend);
+            if (existing) existing.destroy();
+
             window.trendChart = new Chart(ctxTrend.getContext('2d'), {
                 type: 'bar',
                 data: {
@@ -756,6 +788,9 @@ async function renderReports() {
 
         const ctxTop = document.getElementById('inventoryGapsChart');
         if (ctxTop && topRes.success) {
+            const existing = Chart.getChart(ctxTop);
+            if (existing) existing.destroy();
+
             window.topMedsChart = new Chart(ctxTop.getContext('2d'), {
                 type: 'bar',
                 data: {
