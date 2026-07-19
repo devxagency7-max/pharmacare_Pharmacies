@@ -11,7 +11,7 @@ function _notifHeaders() {
 async function apiGetNotifications(page = 1, pageSize = 20) {
     try {
         const response = await fetch(`${API_BASE}/notifications?page=${page}&pageSize=${pageSize}`, {
-            method: 'GET', headers: _notifHeaders()
+            method: 'GET', headers: authHeader()
         });
         return await safeJson(response);
     } catch (e) {
@@ -23,7 +23,7 @@ async function apiGetNotifications(page = 1, pageSize = 20) {
 async function apiGetUnreadCount() {
     try {
         const response = await fetch(`${API_BASE}/notifications/unread-count`, {
-            method: 'GET', headers: _notifHeaders()
+            method: 'GET', headers: authHeader()
         });
         return await safeJson(response);
     } catch (e) {
@@ -35,7 +35,7 @@ async function apiGetUnreadCount() {
 async function apiMarkNotificationRead(id) {
     try {
         const response = await fetch(`${API_BASE}/notifications/${id}/read`, {
-            method: 'PUT', headers: _notifHeaders()
+            method: 'PUT', headers: authHeader()
         });
         return await safeJson(response);
     } catch (e) {

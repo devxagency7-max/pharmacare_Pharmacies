@@ -35,7 +35,7 @@ async function apiGetPharmacyProfile(pharmacyId) {
     try {
         const response = await fetch(`${API_BASE}/pharmacies/${pharmacyId}`, {
             method: 'GET',
-            headers: _pharmHeaders()
+            headers: _pharmAuthHeader()
         });
         return await safeJson(response);
     } catch (error) {
@@ -126,7 +126,7 @@ async function apiGetPharmacyBranches(pharmacyId, page = 1, pageSize = 20) {
     try {
         const response = await fetch(
             `${API_BASE}/pharmacies/${pharmacyId}/branches?page=${page}&pageSize=${pageSize}`,
-            { method: 'GET', headers: _pharmHeaders() }
+            { method: 'GET', headers: _pharmAuthHeader() }
         );
         return await safeJson(response);
     } catch (error) {
@@ -142,7 +142,7 @@ async function apiGetBranchDetails(branchId) {
     try {
         const response = await fetch(`${API_BASE}/pharmacies/branches/${branchId}`, {
             method: 'GET',
-            headers: _pharmHeaders()
+            headers: _pharmAuthHeader()
         });
         return await safeJson(response);
     } catch (error) {
@@ -212,7 +212,7 @@ async function apiGetGovernorates() {
     try {
         const response = await fetch(`${API_BASE}/pharmacies/governorates`, {
             method: 'GET',
-            headers: _pharmHeaders()
+            headers: _pharmAuthHeader()
         });
         return await safeJson(response);
     } catch (error) {

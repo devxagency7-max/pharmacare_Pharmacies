@@ -14,7 +14,7 @@ function _rxHeaders() {
 async function apiGetPendingPrescriptions(page = 1, pageSize = 50) {
     try {
         const response = await fetch(`${API_BASE}/prescriptions/pending?page=${page}&pageSize=${pageSize}`, {
-            method: 'GET', headers: _rxHeaders()
+            method: 'GET', headers: authHeader()
         });
         return await safeJson(response);
     } catch (e) {
