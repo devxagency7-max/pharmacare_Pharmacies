@@ -907,19 +907,14 @@ function sanitizeImageUrl(url, name) {
     url = url.trim();
     if (url === '' || url === 'string' || url === 'null' || url === 'undefined') return fallback;
 
-    // Replace old server IP with the new one if present
-    if (url.includes('148.230.114.124:8080')) {
-        url = url.replace('148.230.114.124:8080', '204.168.149.185');
-    }
+    // Already a valid absolute URL (https R2 signed URL, data URI, etc.) — use as-is
+    if (url.startsWith('https://') || url.startsWith('data:')) return url;
 
-    // Convert relative URLs to absolute using new backend server base
-    const backendHost = 'http://204.168.149.185';
-    if (url.startsWith('/')) {
-        url = `${backendHost}${url}`;
-    } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
-        url = `${backendHost}/${url}`;
-    }
-    return url;
+    // http:// URLs would be blocked as mixed-content on the HTTPS Vercel site — use fallback
+    if (url.startsWith('http://')) return fallback;
+
+    // Relative path or raw object key — not directly usable; backend should return full https URL
+    return fallback;
 }
 
 function updatePharmacyStatus() {
@@ -1005,24 +1000,22 @@ async function savePharmacyProfile(event) {
         const result = await apiUpdatePharmacyProfile(profilePayload);
 
         if (result.success) {
+            // Immediately show preview image in topbar (from local FileReader data)
+            const headerImg  = document.querySelector('.profile img');
             const headerName = document.querySelector('.profile-info .name');
+
             if (headerName) headerName.textContent = name;
 
-            const headerImg = document.querySelector('.profile img');
-            if (headerImg) {
-                const finalUrl = logoUrl || window.pendingLogoData || '';
-                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff`;
-                const sanitizedUrl = sanitizeImageUrl(finalUrl, name);
-
-                headerImg.onerror = () => {
-                    headerImg.onerror = null;
-                    headerImg.src = fallbackUrl;
-                };
-                headerImg.src = sanitizedUrl;
+            if (headerImg && window.pendingLogoData) {
+                headerImg.src = window.pendingLogoData;
+                window.pendingLogoData = null;
             }
 
             const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
             localStorage.setItem('user_info', JSON.stringify({ ...userInfo, name, isOpen }));
+
+            // Reload full profile from backend to get the fresh R2 signed URL for the topbar
+            setTimeout(() => loadCurrentUser(), 800);
 
             alert('Pharmacy profile updated successfully!');
         } else {
