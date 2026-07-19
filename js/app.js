@@ -962,19 +962,47 @@ async function savePharmacyProfile(event) {
     btn.disabled = true; btn.textContent = 'Saving...';
 
     try {
-        let logoUrl = '';
+        let logoUrl = undefined; // undefined = don't send logoUrl field at all (keeps existing logo)
 
         if (window.pendingLogoFile) {
             const uploadResult = await apiUploadLogo(window.pendingLogoFile);
+            console.log('[Logo Upload] Full response:', JSON.stringify(uploadResult));
+
             if (!uploadResult.success) {
-                alert('Logo upload failed: ' + (uploadResult.message || 'Please try again.'));
+                alert('Logo upload failed: ' + (uploadResult.message || uploadResult.error || 'Please try again.'));
+                btn.disabled = false; btn.textContent = 'Save Changes';
                 return;
             }
-            logoUrl = uploadResult.data?.url || uploadResult.data?.fileUrl || '';
+
+            // Backend may return the URL under various field names — try all of them
+            const d = uploadResult.data;
+            logoUrl = (typeof d === 'string' ? d : null)
+                   || d?.url
+                   || d?.fileUrl
+                   || d?.signedUrl
+                   || d?.objectUrl
+                   || d?.logoUrl
+                   || d?.key
+                   || d?.fileKey
+                   || '';
+
+            console.log('[Logo Upload] Extracted logoUrl:', logoUrl);
+
+            if (!logoUrl) {
+                console.warn('[Logo Upload] Could not extract URL from response. Full data:', d);
+                alert('Logo uploaded but URL could not be read. Check console for details.');
+                btn.disabled = false; btn.textContent = 'Save Changes';
+                return;
+            }
+
             window.pendingLogoFile = null;
         }
 
-        const result = await apiUpdatePharmacyProfile({ name, governorate: gov, address, workingHoursDescription: hours, isOpen, logoUrl });
+        // Build profile payload — only include logoUrl if we have a new one
+        const profilePayload = { name, governorate: gov, address, workingHoursDescription: hours, isOpen };
+        if (logoUrl !== undefined) profilePayload.logoUrl = logoUrl;
+
+        const result = await apiUpdatePharmacyProfile(profilePayload);
 
         if (result.success) {
             const headerName = document.querySelector('.profile-info .name');
