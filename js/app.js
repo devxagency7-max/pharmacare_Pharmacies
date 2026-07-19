@@ -342,11 +342,9 @@ async function renderOrders(showLoading = true) {
                 <td>#${o.id.slice(0,8)}</td>
                 <td>${o.customerName}</td>
                 <td><span class="status-badge ${getStatusClass(o.orderStatus)}">${o.orderStatus}</span></td>
-                <td><span class="status-badge ${getPaymentClass(o.paymentStatus)}">${o.paymentStatus || '—'}</span></td>
-                <td>${o.finalPrice != null ? o.finalPrice + ' EGP' : '—'}</td>
                 <td>${formatTime(o.createdAt)}</td>
             </tr>
-        `).join('') || '<tr><td colspan="6" style="text-align:center">History is empty</td></tr>';
+        `).join('') || '<tr><td colspan="4" style="text-align:center">History is empty</td></tr>';
 
         // Refresh dashboard stats if that section is currently visible
         const dashSection = document.getElementById('dashboard');
@@ -358,7 +356,7 @@ async function renderOrders(showLoading = true) {
     }
 }
 
-async function handleOrderAction(orderId, action, notes = '', finalPrice = null) {
+async function handleOrderAction(orderId, action, notes = '') {
     const BASE    = API_BASE;
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -369,7 +367,7 @@ async function handleOrderAction(orderId, action, notes = '', finalPrice = null)
         if (action === 'accept') {
             res = await safeJson(await fetch(`${BASE}/orders/${orderId}/respond`, {
                 method: 'POST', headers,
-                body: JSON.stringify({ action: 'accept', notes, finalPrice })
+                body: JSON.stringify({ action: 'accept', notes })
             }));
 
         } else if (action === 'reject-confirm') {
@@ -400,14 +398,8 @@ async function handleOrderAction(orderId, action, notes = '', finalPrice = null)
 }
 
 function promptAccept(orderId) {
-    const priceStr = prompt('Enter the total price for the patient (EGP):', '');
-    if (priceStr === null) return; // cancelled
-    const price = parseFloat(priceStr);
-    if (isNaN(price) || price < 0) {
-        alert('Please enter a valid price (e.g. 150 or 75.50)');
-        return;
-    }
-    handleOrderAction(orderId, 'accept', '', price);
+    if (!confirm('Accept this order?')) return;
+    handleOrderAction(orderId, 'accept', '');
 }
 
 function promptReject(orderId) {
@@ -1017,13 +1009,6 @@ function getStatusClass(status) {
     return 'primary';
 }
 
-function getPaymentClass(status) {
-    const s = (status || '').toLowerCase();
-    if (s === 'paid')      return 'success';
-    if (s === 'pending')   return 'warning';
-    if (s === 'cancelled') return 'danger';
-    return 'primary';
-}
 
 function formatTime(dateStr) {
     if (!dateStr) return '—';
