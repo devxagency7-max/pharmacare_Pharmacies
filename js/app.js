@@ -140,11 +140,20 @@ async function loadCurrentUser() {
         const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0D8ABC&color=fff`;
         const sanitizedUrl = sanitizeImageUrl(displayLogo, displayName);
 
-        imgEl.onerror = () => {
-            imgEl.onerror = null;
+        // Only replace the current image if the backend gave us a real HTTPS logo URL.
+        // If displayLogo is empty/http, keep whatever is already showing (e.g. the local preview
+        // set immediately after save) instead of flashing back to the initials fallback.
+        const isRealUrl = sanitizedUrl && sanitizedUrl.startsWith('https://') && !sanitizedUrl.includes('ui-avatars.com');
+        const currentSrc = imgEl.src || '';
+        const keepCurrent = currentSrc && (currentSrc.startsWith('data:') || (!currentSrc.includes('ui-avatars.com') && currentSrc.startsWith('https://')));
+
+        if (isRealUrl) {
+            imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = fallbackUrl; };
+            imgEl.src = sanitizedUrl;
+        } else if (!keepCurrent) {
             imgEl.src = fallbackUrl;
-        };
-        imgEl.src = sanitizedUrl;
+        }
+        // else: keep the current src (local preview from FileReader or a valid logo already showing)
     }
 
     // Unread count badge (pharmacist only)
