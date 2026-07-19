@@ -122,7 +122,13 @@ async function loadCurrentUser() {
     if (nameEl) nameEl.textContent = d.name || 'Pharmacy';
 
     const imgEl = document.querySelector('.profile img');
-    if (imgEl && d.avatarUrl) imgEl.src = d.avatarUrl;
+    if (imgEl && d.avatarUrl) {
+        imgEl.src = d.avatarUrl;
+        imgEl.onerror = () => {
+            imgEl.onerror = null;
+            imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name || 'P')}&background=0D8ABC&color=fff`;
+        };
+    }
 
     // Unread count badge (pharmacist only)
     const roles = d.roles || [];
