@@ -1,9 +1,7 @@
 /**
  * app.js - Pharmacy Dashboard Logic
- * All sections now connected to the real API.
+ * This dashboard is for PharmacyOwner role only.
  */
-
-const OWNER_ONLY_SECTIONS = ['dashboard', 'orders', 'reports', 'branches', 'settings'];
 
 // Global state — populated after GET /users/me
 let _pharmacyId  = null;
@@ -30,20 +28,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Load fresh user profile from backend
     await loadCurrentUser();
 
-    const userInfo     = JSON.parse(localStorage.getItem('user_info') || '{}');
-    const roles        = userInfo.roles || [];
-    const isOwner = roles.includes('PharmacyOwner');
-
-    // 2. Role-based nav
-    // PharmacyOwner → sees ALL sections
-    // Pharmacist / PharmacyIntern → sees ONLY prescriptions + notifications
-    navItems.forEach(item => {
-        const sec = item.getAttribute('data-section');
-        if (isOwner) return; // owner sees everything
-        if (OWNER_ONLY_SECTIONS.includes(sec)) {
-            item.closest('li').style.display = 'none';
-        }
-    });
+    // 2. Guard: this dashboard is for PharmacyOwner only
+    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+    if (!userInfo.roles?.includes('PharmacyOwner')) {
+        logout();
+        return;
+    }
 
     // 3. Sidebar toggle
     sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('close'));
@@ -72,17 +62,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (name === 'settings')      initSettings();
     }
 
-    // 5. Default landing
-    const defaultSection = isOwner ? 'dashboard' : 'prescriptions';
+    // 5. Default landing — always Dashboard for PharmacyOwner
     navItems.forEach(item => {
         item.classList.remove('active');
-        if (item.getAttribute('data-section') === defaultSection) item.classList.add('active');
+        if (item.getAttribute('data-section') === 'dashboard') item.classList.add('active');
     });
     sections.forEach(s => {
         s.classList.remove('active');
-        if (s.id === defaultSection) s.classList.add('active');
+        if (s.id === 'dashboard') s.classList.add('active');
     });
-    initSection(defaultSection);
+    initSection('dashboard');
 
     // 6. Start polling (unread count every 30s, orders refresh every 20s)
     startPolling();
