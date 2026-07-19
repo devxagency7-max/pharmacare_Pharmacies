@@ -30,16 +30,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Load fresh user profile from backend
     await loadCurrentUser();
 
-    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-    const roles    = userInfo.roles || [];
-    const isOwner  = roles.includes('PharmacyOwner');
+    const userInfo     = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const roles        = userInfo.roles || [];
+    const isOwner      = roles.includes('PharmacyOwner');
+    const isPharmacist = roles.includes('Pharmacist');
 
-    // 2. Role-based nav — hide owner-only items from pharmacists
-    if (!isOwner) {
-        navItems.forEach(item => {
-            const sec = item.getAttribute('data-section');
-            if (OWNER_ONLY_SECTIONS.includes(sec)) item.closest('li').style.display = 'none';
-        });
+    const PHARMACIST_ONLY_SECTIONS = ['prescriptions', 'notifications'];
+
+    // 2. Role-based nav — hide items based on role permissions
+    navItems.forEach(item => {
+        const sec = item.getAttribute('data-section');
+        if (OWNER_ONLY_SECTIONS.includes(sec) && !isOwner) {
+            item.closest('li').style.display = 'none';
+        }
+        if (PHARMACIST_ONLY_SECTIONS.includes(sec) && !isPharmacist) {
+            item.closest('li').style.display = 'none';
+        }
+    });
+
+    // Hide topbar notification icon if the user is not a pharmacist
+    if (!isPharmacist) {
+        const notifIcon = document.querySelector('.notification-icon');
+        if (notifIcon) notifIcon.style.display = 'none';
     }
 
     // 3. Sidebar toggle
@@ -112,11 +124,21 @@ async function loadCurrentUser() {
     const imgEl = document.querySelector('.profile img');
     if (imgEl && d.avatarUrl) imgEl.src = d.avatarUrl;
 
-    // Unread count badge
-    updateNotificationBadge();
+    // Unread count badge (pharmacist only)
+    const roles = d.roles || [];
+    if (roles.includes('Pharmacist')) {
+        updateNotificationBadge();
+    } else {
+        const badge = document.querySelector('.notification-icon .badge');
+        if (badge) badge.style.display = 'none';
+    }
 }
 
 async function updateNotificationBadge() {
+    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const roles    = userInfo.roles || [];
+    if (!roles.includes('Pharmacist')) return;
+
     const res = await apiGetUnreadCount();
     const badge = document.querySelector('.notification-icon .badge');
     if (!badge) return;
@@ -131,7 +153,11 @@ async function updateNotificationBadge() {
 function startPolling() {
     if (_pollInterval) clearInterval(_pollInterval);
     _pollInterval = setInterval(() => {
-        updateNotificationBadge();
+        const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+        const roles    = userInfo.roles || [];
+        if (roles.includes('Pharmacist')) {
+            updateNotificationBadge();
+        }
         // Refresh orders if that tab is currently visible
         const ordersSection = document.getElementById('orders');
         if (ordersSection && ordersSection.classList.contains('active')) {
