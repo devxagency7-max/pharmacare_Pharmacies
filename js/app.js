@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (name === 'dashboard')     initDashboard();
         if (name === 'orders')        renderOrders();
         if (name === 'prescriptions') renderPrescriptions();
-        if (name === 'branches')      renderBranches();
         if (name === 'notifications') renderNotifications();
         if (name === 'reports')       renderReports();
         if (name === 'settings')      initSettings();
