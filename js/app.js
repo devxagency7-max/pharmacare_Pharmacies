@@ -986,10 +986,15 @@ async function savePharmacyProfile(event) {
 
             if (headerName) headerName.textContent = name;
 
-            // Show the local preview in the topbar — permanent until next page load
-            if (headerImg && window.pendingLogoData) {
-                headerImg.onerror = null; // disable any old onerror before changing src
-                headerImg.src = window.pendingLogoData;
+            // Prefer the real backend URL returned in the response; fall back to local preview
+            const savedLogoUrl = result.data?.logoUrl;
+            if (headerImg) {
+                headerImg.onerror = null;
+                if (savedLogoUrl && (savedLogoUrl.startsWith('https://') || savedLogoUrl.startsWith('data:'))) {
+                    headerImg.src = savedLogoUrl;
+                } else if (window.pendingLogoData) {
+                    headerImg.src = window.pendingLogoData;
+                }
             }
             window.pendingLogoData = null;
             window.pendingLogoFile = null;
