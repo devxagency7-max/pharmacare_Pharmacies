@@ -117,14 +117,28 @@ async function loadCurrentUser() {
 
     localStorage.setItem('user_info', JSON.stringify(d));
 
-    // Update topbar
+    // Update topbar name and image
     const nameEl = document.querySelector('.profile-info .name');
-    if (nameEl) nameEl.textContent = d.name || 'Pharmacy';
-
     const imgEl = document.querySelector('.profile img');
+
+    let displayName = d.name || 'Pharmacy';
+    let displayLogo = d.avatarUrl || '';
+
+    // If they are a PharmacyOwner and have a pharmacyId, fetch and use the pharmacy name/logo!
+    const roles = d.roles || [];
+    if (roles.includes('PharmacyOwner') && _pharmacyId) {
+        const phRes = await apiGetPharmacyProfile(_pharmacyId);
+        if (phRes.success && phRes.data) {
+            displayName = phRes.data.name || displayName;
+            displayLogo = phRes.data.logoUrl || displayLogo;
+        }
+    }
+
+    if (nameEl) nameEl.textContent = displayName;
+
     if (imgEl) {
-        const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name || 'P')}&background=0D8ABC&color=fff`;
-        const sanitizedUrl = sanitizeImageUrl(d.avatarUrl, d.name);
+        const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0D8ABC&color=fff`;
+        const sanitizedUrl = sanitizeImageUrl(displayLogo, displayName);
 
         imgEl.onerror = () => {
             imgEl.onerror = null;
@@ -134,7 +148,6 @@ async function loadCurrentUser() {
     }
 
     // Unread count badge (pharmacist only)
-    const roles = d.roles || [];
     if (roles.includes('Pharmacist')) {
         updateNotificationBadge();
     } else {
