@@ -193,111 +193,91 @@ function startPolling() {
 // ─────────────────────────────────────────────────────────────
 
 async function initDashboard() {
-    // Stats cards from real API
-    await loadDashboardStats();
+    const userInfo  = JSON.parse(localStorage.getItem('user_info') || '{}');
+    const bid = _branchId   || userInfo.branchId;
+    const pid = _pharmacyId || userInfo.pharmacyId;
 
-    // Charts — use top-medications for doughnut, fulfillment-trend for line
-    const ctxTrend   = document.getElementById('ordersTrendChart');
-    const ctxSelling = document.getElementById('topSellingChart');
-    if (!ctxTrend || !ctxSelling) return;
+    // Show loading state in stat cards immediately (no flash of old data)
+    const setCard = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setCard('stat-pending-orders',    '…');
+    setCard('stat-processing-orders', '…');
+    setCard('stat-confirmed-orders',  '…');
+    setCard('stat-rejected-orders',   '…');
 
-    // Safely destroy existing charts using static Chart.getChart helper
-    ['ordersTrendChart', 'topSellingChart'].forEach(id => {
-        const canvas = document.getElementById(id);
-        if (canvas) {
-            const existing = Chart.getChart(canvas);
-            if (existing) existing.destroy();
-        }
-    });
-
-    if (window._dashTrendChart)   { window._dashTrendChart.destroy();   window._dashTrendChart   = null; }
-    if (window._dashSellingChart) { window._dashSellingChart.destroy(); window._dashSellingChart = null; }
-
-    if (!_pharmacyId) return;
+    if (!bid || !pid) return;
 
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}` };
     const BASE    = API_BASE;
 
     try {
-        const [trendRes, topRes] = await Promise.all([
-            safeJson(await fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${_pharmacyId}&months=7`, { headers })),
-            safeJson(await fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${_pharmacyId}&limit=3`, { headers }))
+        // Fetch everything in one parallel round-trip
+        const [summaryRes, trendRes, topRes] = await Promise.all([
+            safeJson(await fetch(`${BASE}/orders/summary?branchId=${bid}`, { headers })),
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${pid}&months=7`, { headers })),
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pid}&limit=3`, { headers }))
         ]);
 
-        if (trendRes.success) {
+        // ── Stats cards (update all at once after data arrives) ──
+        if (summaryRes.success) {
+            const d = summaryRes.data;
+            setCard('stat-pending-orders',    d.pending   ?? 0);
+            setCard('stat-processing-orders', d.accepted  ?? 0);
+            setCard('stat-confirmed-orders',  d.completed ?? 0);
+            setCard('stat-rejected-orders',   (d.rejected ?? 0) + (d.cancelled ?? 0));
+        } else {
+            setCard('stat-pending-orders', '—'); setCard('stat-processing-orders', '—');
+            setCard('stat-confirmed-orders', '—'); setCard('stat-rejected-orders', '—');
+        }
+
+        // ── Charts (update data if chart exists, create if not) ──
+        const ctxTrend   = document.getElementById('ordersTrendChart');
+        const ctxSelling = document.getElementById('topSellingChart');
+
+        if (ctxTrend && trendRes.success) {
             const labels = trendRes.data.map(p => `${p.month}/${p.year}`);
             const counts = trendRes.data.map(p => p.completedCount);
-
             const existing = Chart.getChart(ctxTrend);
-            if (existing) existing.destroy();
-
-            window._dashTrendChart = new Chart(ctxTrend.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'Completed Orders',
-                        data: counts,
-                        borderColor: '#0057d1',
-                        backgroundColor: 'rgba(0,87,209,0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+            if (existing) {
+                existing.data.labels = labels;
+                existing.data.datasets[0].data = counts;
+                existing.update('none'); // 'none' = no animation on update
+            } else {
+                window._dashTrendChart = new Chart(ctxTrend.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{ label: 'Completed Orders', data: counts, borderColor: '#0057d1', backgroundColor: 'rgba(0,87,209,0.1)', tension: 0.4, fill: true }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 } }
+                });
+            }
         }
 
-        if (topRes.success && topRes.data.length) {
+        if (ctxSelling && topRes.success && topRes.data.length) {
             const medLabels = topRes.data.map(m => m.name);
             const medCounts = topRes.data.map(m => m.orderItemCount);
-
             const existing = Chart.getChart(ctxSelling);
-            if (existing) existing.destroy();
-
-            window._dashSellingChart = new Chart(ctxSelling.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: medLabels,
-                    datasets: [{ data: medCounts, backgroundColor: ['#0057d1', '#10B981', '#F59E0B'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+            if (existing) {
+                existing.data.labels = medLabels;
+                existing.data.datasets[0].data = medCounts;
+                existing.update('none');
+            } else {
+                window._dashSellingChart = new Chart(ctxSelling.getContext('2d'), {
+                    type: 'doughnut',
+                    data: { labels: medLabels, datasets: [{ data: medCounts, backgroundColor: ['#0057d1', '#10B981', '#F59E0B'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 } }
+                });
+            }
         }
+
     } catch (err) {
-        console.error('initDashboard charts error:', err);
+        console.error('initDashboard error:', err);
+        setCard('stat-pending-orders', '—'); setCard('stat-processing-orders', '—');
+        setCard('stat-confirmed-orders', '—'); setCard('stat-rejected-orders', '—');
     }
 }
 
-async function loadDashboardStats() {
-    if (!_branchId) {
-        // Fallback: try to read from localStorage
-        const u = JSON.parse(localStorage.getItem('user_info') || '{}');
-        _branchId   = u.branchId   || null;
-        _pharmacyId = u.pharmacyId || null;
-    }
-
-    if (!_branchId) return;
-
-    const BASE    = API_BASE;
-    const token   = localStorage.getItem('firebase_token');
-    const headers = { 'Authorization': `Bearer ${token}` };
-
-    try {
-        const res = await safeJson(await fetch(`${BASE}/orders/summary?branchId=${_branchId}`, { headers }));
-        if (!res.success) return;
-
-        const d = res.data;
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set('stat-pending-orders',    d.pending    ?? 0);
-        set('stat-processing-orders', d.accepted   ?? 0);
-        set('stat-confirmed-orders',  d.completed  ?? 0);
-        set('stat-rejected-orders',   (d.rejected ?? 0) + (d.cancelled ?? 0));
-    } catch (err) {
-        console.error('loadDashboardStats error:', err);
-    }
-}
 
 // ─────────────────────────────────────────────────────────────
 // Orders
@@ -379,8 +359,9 @@ async function renderOrders(showLoading = true) {
             </tr>
         `).join('') || '<tr><td colspan="6" style="text-align:center">History is empty</td></tr>';
 
-        // Update dashboard stat cards too
-        loadDashboardStats();
+        // Refresh dashboard stats if that section is currently visible
+        const dashSection = document.getElementById('dashboard');
+        if (dashSection && dashSection.classList.contains('active')) initDashboard();
 
     } catch (err) {
         console.error('renderOrders error:', err);
