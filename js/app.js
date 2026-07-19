@@ -32,27 +32,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const userInfo     = JSON.parse(localStorage.getItem('user_info') || '{}');
     const roles        = userInfo.roles || [];
-    const isOwner      = roles.includes('PharmacyOwner');
-    const isPharmacist = roles.includes('Pharmacist');
+    const isOwner = roles.includes('PharmacyOwner');
 
-    const PHARMACIST_ONLY_SECTIONS = ['prescriptions', 'notifications'];
-
-    // 2. Role-based nav — hide items based on role permissions
+    // 2. Role-based nav
+    // PharmacyOwner → sees ALL sections
+    // Pharmacist / PharmacyIntern → sees ONLY prescriptions + notifications
     navItems.forEach(item => {
         const sec = item.getAttribute('data-section');
-        if (OWNER_ONLY_SECTIONS.includes(sec) && !isOwner) {
-            item.closest('li').style.display = 'none';
-        }
-        if (PHARMACIST_ONLY_SECTIONS.includes(sec) && !isPharmacist) {
+        if (isOwner) return; // owner sees everything
+        if (OWNER_ONLY_SECTIONS.includes(sec)) {
             item.closest('li').style.display = 'none';
         }
     });
-
-    // Hide topbar notification icon if the user is not a pharmacist
-    if (!isPharmacist) {
-        const notifIcon = document.querySelector('.notification-icon');
-        if (notifIcon) notifIcon.style.display = 'none';
-    }
 
     // 3. Sidebar toggle
     sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('close'));
