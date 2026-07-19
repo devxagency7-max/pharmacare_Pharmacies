@@ -122,12 +122,15 @@ async function loadCurrentUser() {
     if (nameEl) nameEl.textContent = d.name || 'Pharmacy';
 
     const imgEl = document.querySelector('.profile img');
-    if (imgEl && d.avatarUrl) {
-        imgEl.src = d.avatarUrl;
+    if (imgEl) {
+        const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name || 'P')}&background=0D8ABC&color=fff`;
+        const sanitizedUrl = sanitizeImageUrl(d.avatarUrl, d.name);
+
         imgEl.onerror = () => {
             imgEl.onerror = null;
-            imgEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name || 'P')}&background=0D8ABC&color=fff`;
+            imgEl.src = fallbackUrl;
         };
+        imgEl.src = sanitizedUrl;
     }
 
     // Unread count badge (pharmacist only)
@@ -834,16 +837,76 @@ async function renderReports() {
 // Settings
 // ─────────────────────────────────────────────────────────────
 
-function initSettings() {
+async function initSettings() {
     const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-    const nameEl   = document.getElementById('set-pharmacy-name');
-    if (nameEl && userInfo.name) nameEl.value = userInfo.name;
+    const pharmacyId = _pharmacyId || userInfo.pharmacyId;
+    if (!pharmacyId) return;
 
-    const checkbox = document.getElementById('pharmacy-status-check');
-    if (checkbox && typeof userInfo.isOpen === 'boolean') {
-        checkbox.checked = userInfo.isOpen;
-        updatePharmacyStatus();
+    try {
+        const res = await apiGetPharmacyProfile(pharmacyId);
+        if (res.success && res.data) {
+            const ph = res.data;
+
+            const nameEl = document.getElementById('set-pharmacy-name');
+            if (nameEl) nameEl.value = ph.name || '';
+
+            const licenseEl = document.getElementById('set-pharmacy-license');
+            if (licenseEl) licenseEl.value = ph.registrationNumber || ph.licenseNumber || '';
+
+            const govEl = document.getElementById('set-pharmacy-gov');
+            if (govEl && ph.governorate) {
+                govEl.value = ph.governorate;
+            }
+
+            const addressEl = document.getElementById('set-pharmacy-address');
+            if (addressEl) addressEl.value = ph.address || '';
+
+            const hoursEl = document.getElementById('set-pharmacy-hours');
+            if (hoursEl) hoursEl.value = ph.workingHoursDescription || '';
+
+            const checkbox = document.getElementById('pharmacy-status-check');
+            if (checkbox) {
+                checkbox.checked = !!ph.isOpen;
+                updatePharmacyStatus();
+            }
+
+            // Populate logo preview
+            const logoPreview = document.getElementById('profile-logo-preview');
+            if (logoPreview) {
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(ph.name || 'P')}&background=0D8ABC&color=fff`;
+                const sanitizedUrl = sanitizeImageUrl(ph.logoUrl, ph.name);
+
+                logoPreview.onerror = () => {
+                    logoPreview.onerror = null;
+                    logoPreview.src = fallbackUrl;
+                };
+                logoPreview.src = sanitizedUrl;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading settings:', error);
     }
+}
+
+function sanitizeImageUrl(url, name) {
+    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'P')}&background=0D8ABC&color=fff`;
+    if (!url) return fallback;
+    url = url.trim();
+    if (url === '' || url === 'string' || url === 'null' || url === 'undefined') return fallback;
+
+    // Replace old server IP with the new one if present
+    if (url.includes('148.230.114.124:8080')) {
+        url = url.replace('148.230.114.124:8080', '204.168.149.185');
+    }
+
+    // Convert relative URLs to absolute using new backend server base
+    const backendHost = 'http://204.168.149.185';
+    if (url.startsWith('/')) {
+        url = `${backendHost}${url}`;
+    } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('data:')) {
+        url = `${backendHost}/${url}`;
+    }
+    return url;
 }
 
 function updatePharmacyStatus() {
@@ -906,8 +969,15 @@ async function savePharmacyProfile(event) {
 
             const headerImg = document.querySelector('.profile img');
             if (headerImg) {
-                headerImg.src = logoUrl || window.pendingLogoData ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff`;
+                const finalUrl = logoUrl || window.pendingLogoData || '';
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff`;
+                const sanitizedUrl = sanitizeImageUrl(finalUrl, name);
+
+                headerImg.onerror = () => {
+                    headerImg.onerror = null;
+                    headerImg.src = fallbackUrl;
+                };
+                headerImg.src = sanitizedUrl;
             }
 
             const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
