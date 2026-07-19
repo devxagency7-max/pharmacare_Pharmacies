@@ -57,12 +57,6 @@
                 </a>
             </li>
             <li>
-                <a data-section="notifications" class="nav-item">
-                    <i class='bx bx-bell'></i>
-                    <span class="link-name">Notifications</span>
-                </a>
-            </li>
-            <li>
                 <a data-section="branches" class="nav-item">
                     <i class='bx bx-map-pin'></i>
                     <span class="link-name">Branches</span>
@@ -94,9 +88,19 @@
             </div>
 
             <div class="topbar-right">
-                <div class="notification-icon">
+                <div class="notification-icon" id="notif-toggle" onclick="toggleNotifDropdown()" style="cursor:pointer">
                     <i class='bx bx-bell'></i>
-                    <span class="badge">5</span>
+                    <span class="badge" id="notif-badge" style="display:none"></span>
+                </div>
+                <!-- Notifications Dropdown -->
+                <div class="notif-dropdown" id="notif-dropdown" style="display:none">
+                    <div class="notif-dropdown-header">
+                        <span>Notifications</span>
+                        <button onclick="markAllNotifsRead()" class="notif-mark-all">Mark all read</button>
+                    </div>
+                    <div class="notif-dropdown-list" id="notif-dropdown-list">
+                        <p style="text-align:center;padding:20px;color:#94A3B8">Loading...</p>
+                    </div>
                 </div>
                 <div class="profile">
                     <img src="https://ui-avatars.com/api/?name=Abdallah+Mohamed+Fathy&background=0D8ABC&color=fff"
@@ -444,16 +448,6 @@
                 </div>
             </section>
 
-            <!-- Notifications Section -->
-            <section id="notifications" class="section-content">
-                <div class="page-header">
-                    <h1>Notifications</h1>
-                    <p>Stay updated with pharmacy activities.</p>
-                </div>
-                <div class="notification-list" id="notification-container">
-                    <!-- Dynamic Content -->
-                </div>
-            </section>
 
 
             <section id="chat" class="section-content">

@@ -136,25 +136,15 @@ async function loadCurrentUser() {
         // else: keep the current src (local preview from FileReader or a valid logo already showing)
     }
 
-    // Unread count badge (pharmacist only)
-    if (roles.includes('Pharmacist')) {
-        updateNotificationBadge();
-    } else {
-        const badge = document.querySelector('.notification-icon .badge');
-        if (badge) badge.style.display = 'none';
-    }
+    updateNotificationBadge();
 }
 
 async function updateNotificationBadge() {
-    const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-    const roles    = userInfo.roles || [];
-    if (!roles.includes('Pharmacist')) return;
-
     const res = await apiGetUnreadCount();
-    const badge = document.querySelector('.notification-icon .badge');
+    const badge = document.getElementById('notif-badge');
     if (!badge) return;
-    if (res.success && res.data > 0) {
-        badge.textContent = res.data;
+    if (res.success && typeof res.data === 'number' && res.data > 0) {
+        badge.textContent = res.data > 99 ? '99+' : res.data;
         badge.style.display = 'flex';
     } else {
         badge.style.display = 'none';
@@ -164,11 +154,7 @@ async function updateNotificationBadge() {
 function startPolling() {
     if (_pollInterval) clearInterval(_pollInterval);
     _pollInterval = setInterval(() => {
-        const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-        const roles    = userInfo.roles || [];
-        if (roles.includes('Pharmacist')) {
-            updateNotificationBadge();
-        }
+        updateNotificationBadge();
         // Refresh orders if that tab is currently visible
         const ordersSection = document.getElementById('orders');
         if (ordersSection && ordersSection.classList.contains('active')) {
@@ -647,57 +633,71 @@ async function handleAuthAddBranch(event) {
 // Notifications
 // ─────────────────────────────────────────────────────────────
 
-async function renderNotifications() {
-    const container = document.getElementById('notification-container');
-    if (!container) return;
+// ─────────────────────────────────────────────────────────────
+// Notification Dropdown
+// ─────────────────────────────────────────────────────────────
 
-    container.innerHTML = '<p style="text-align:center">Loading notifications...</p>';
+let _notifDropdownOpen = false;
 
-    try {
-        const res = await apiGetNotifications(1, 30);
+function toggleNotifDropdown() {
+    const dropdown = document.getElementById('notif-dropdown');
+    if (!dropdown) return;
+    _notifDropdownOpen = !_notifDropdownOpen;
+    dropdown.style.display = _notifDropdownOpen ? 'block' : 'none';
+    if (_notifDropdownOpen) loadNotifDropdown();
+}
 
-        if (!res.success) {
-            container.innerHTML = `<p style="text-align:center;color:#EF4444">${res.message || 'Failed to load'}</p>`;
-            return;
-        }
+document.addEventListener('click', (e) => {
+    if (!_notifDropdownOpen) return;
+    const toggle   = document.getElementById('notif-toggle');
+    const dropdown = document.getElementById('notif-dropdown');
+    if (toggle && toggle.contains(e.target)) return;
+    if (dropdown && dropdown.contains(e.target)) return;
+    _notifDropdownOpen = false;
+    if (dropdown) dropdown.style.display = 'none';
+});
 
-        const notifs = res.data.items || [];
+async function loadNotifDropdown() {
+    const list = document.getElementById('notif-dropdown-list');
+    if (!list) return;
+    list.innerHTML = '<p class="notif-dropdown-empty">Loading...</p>';
 
-        if (!notifs.length) {
-            container.innerHTML = '<p style="text-align:center">No notifications yet.</p>';
-            return;
-        }
-
-        container.innerHTML = notifs.map(n => `
-            <div
-                class="notification-item ${n.isRead ? '' : 'unread'}"
-                onclick="markNotifRead('${n.id}', this)"
-                style="cursor:pointer; ${!n.isRead ? 'border-left:3px solid #0057d1; padding-left:12px;' : ''}">
-                <div class="notification-info">
-                    <h4>${n.title}</h4>
-                    <p>${n.body}</p>
-                    <small>${formatTime(n.createdAt)}</small>
-                </div>
-            </div>
-        `).join('');
-
-        // Reset badge after viewing
-        updateNotificationBadge();
-
-    } catch (err) {
-        console.error('renderNotifications error:', err);
-        container.innerHTML = '<p style="text-align:center;color:#EF4444">Network error.</p>';
+    const res = await apiGetNotifications(1, 20);
+    if (!res.success) {
+        list.innerHTML = '<p class="notif-dropdown-empty" style="color:#EF4444">Failed to load.</p>';
+        return;
     }
+
+    const notifs = (res.data?.items) || [];
+    if (!notifs.length) {
+        list.innerHTML = '<p class="notif-dropdown-empty">No notifications yet.</p>';
+        return;
+    }
+
+    list.innerHTML = notifs.map(n => `
+        <div class="notif-dropdown-item ${n.isRead ? '' : 'unread'}" onclick="markNotifRead('${n.id}', this)">
+            <div class="notif-item-title">${n.title || ''}</div>
+            <div class="notif-item-body">${n.body || ''}</div>
+            <div class="notif-item-time">${formatTime(n.createdAt)}</div>
+        </div>
+    `).join('');
+
+    updateNotificationBadge();
 }
 
 async function markNotifRead(id, el) {
     await apiMarkNotificationRead(id);
-    if (el) {
-        el.style.borderLeft = 'none';
-        el.style.paddingLeft = '';
-        el.classList.remove('unread');
-    }
+    if (el) el.classList.remove('unread');
     updateNotificationBadge();
+}
+
+async function markAllNotifsRead() {
+    const items = document.querySelectorAll('#notif-dropdown-list .notif-dropdown-item.unread');
+    const ids   = Array.from(items).map(el => el.getAttribute('onclick').match(/'([^']+)'/)?.[1]).filter(Boolean);
+    await Promise.all(ids.map(id => apiMarkNotificationRead(id)));
+    items.forEach(el => el.classList.remove('unread'));
+    const badge = document.getElementById('notif-badge');
+    if (badge) badge.style.display = 'none';
 }
 
 // ─────────────────────────────────────────────────────────────
