@@ -186,22 +186,41 @@ async function initDashboard() {
 
     try {
         // Fetch everything in one parallel round-trip
-        const [summaryRes, trendRes, topRes] = await Promise.all([
-            safeJson(await fetch(`${BASE}/orders/summary?branchId=${bid}`, { headers })),
+        const [summaryRes, trendRes, topRes, perfRes] = await Promise.all([
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/summary?pharmacyId=${pid}`, { headers })),
             safeJson(await fetch(`${BASE}/pharmacy/dashboard/fulfillment-trend?pharmacyId=${pid}&months=7`, { headers })),
-            safeJson(await fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pid}&limit=3`, { headers }))
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/top-medications?pharmacyId=${pid}&limit=3`, { headers })),
+            safeJson(await fetch(`${BASE}/pharmacy/dashboard/performance?pharmacyId=${pid}`, { headers }))
         ]);
 
         // ── Stats cards (update all at once after data arrives) ──
         if (summaryRes.success) {
             const d = summaryRes.data;
-            setCard('stat-pending-orders',    d.pending   ?? 0);
-            setCard('stat-processing-orders', d.accepted  ?? 0);
-            setCard('stat-confirmed-orders',  d.completed ?? 0);
-            setCard('stat-rejected-orders',   (d.rejected ?? 0) + (d.cancelled ?? 0));
+            setCard('stat-pending-orders',    d.pendingCount    ?? 0);
+            setCard('stat-processing-orders', d.processingCount ?? 0);
+            setCard('stat-confirmed-orders',  d.completedCount  ?? 0);
+            setCard('stat-rejected-orders',   d.cancelledCount  ?? 0);
         } else {
             setCard('stat-pending-orders', '—'); setCard('stat-processing-orders', '—');
             setCard('stat-confirmed-orders', '—'); setCard('stat-rejected-orders', '—');
+        }
+
+        // ── Performance Analysis panel ──
+        const avgRespEl  = document.getElementById('perf-avg-response');
+        const avgFulfEl  = document.getElementById('perf-avg-fulfillment');
+        if (avgRespEl || avgFulfEl) {
+            if (perfRes.success && perfRes.data) {
+                const p = perfRes.data;
+                if (avgRespEl) avgRespEl.textContent = p.averageResponseTimeMinutes != null
+                    ? `${p.averageResponseTimeMinutes.toFixed(1)} min`
+                    : 'Not enough data yet';
+                if (avgFulfEl) avgFulfEl.textContent = p.averageFulfillmentTimeMinutes != null
+                    ? `${p.averageFulfillmentTimeMinutes.toFixed(1)} min`
+                    : 'Not enough data yet';
+            } else {
+                if (avgRespEl) avgRespEl.textContent = '—';
+                if (avgFulfEl) avgFulfEl.textContent = '—';
+            }
         }
 
         // ── Charts (update data if chart exists, create if not) ──
@@ -316,7 +335,10 @@ async function renderOrders(showLoading = true) {
                 <td>${o.customerName}</td>
                 <td>${o.deliveryNotes || '—'}</td>
                 <td class="table-actions">
-                    <button class="action-btn approve" onclick="handleOrderAction('${o.id}','complete')">Complete (Done)</button>
+                    ${o.customerPhone
+                        ? `<a href="tel:${o.customerPhone}" class="action-btn approve"><i class='bx bx-phone'></i> Call</a>`
+                        : '<span style="color:#9CA3AF;font-size:0.85em">No phone yet</span>'}
+                    <button class="action-btn approve" onclick="handleOrderAction('${o.id}','complete')">Complete</button>
                 </td>
             </tr>
         `).join('') || '<tr><td colspan="4" style="text-align:center">No orders in process</td></tr>';
@@ -341,7 +363,7 @@ async function renderOrders(showLoading = true) {
     }
 }
 
-async function handleOrderAction(orderId, action, notes = '') {
+async function handleOrderAction(orderId, action, notes = '', finalPrice = null) {
     const BASE    = API_BASE;
     const token   = localStorage.getItem('firebase_token');
     const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -350,9 +372,11 @@ async function handleOrderAction(orderId, action, notes = '') {
         let res;
 
         if (action === 'accept') {
+            const body = { action: 'accept', notes };
+            if (finalPrice !== null) body.finalPrice = finalPrice;
             res = await safeJson(await fetch(`${BASE}/orders/${orderId}/respond`, {
                 method: 'POST', headers,
-                body: JSON.stringify({ action: 'accept', notes })
+                body: JSON.stringify(body)
             }));
 
         } else if (action === 'reject-confirm') {
@@ -383,8 +407,15 @@ async function handleOrderAction(orderId, action, notes = '') {
 }
 
 function promptAccept(orderId) {
-    if (!confirm('Accept this order?')) return;
-    handleOrderAction(orderId, 'accept', '');
+    const priceInput = prompt('Enter the cash price for this order (required):', '');
+    if (priceInput === null) return; // cancelled
+    const finalPrice = parseFloat(priceInput);
+    if (isNaN(finalPrice) || finalPrice < 0) {
+        alert('Please enter a valid price (0 or more).');
+        return;
+    }
+    const notes = prompt('Add notes for the patient (optional):', '') ?? '';
+    handleOrderAction(orderId, 'accept', notes, finalPrice);
 }
 
 function promptReject(orderId) {
@@ -407,9 +438,6 @@ function switchQueueTab(tab) {
 // Prescriptions
 // ─────────────────────────────────────────────────────────────
 
-// Session-level cache for approved/rejected during current session
-window._rxSessionHistory = window._rxSessionHistory || [];
-
 async function renderPrescriptions() {
     const tableNew        = document.getElementById('table-new-rxs');
     const tableProcessing = document.getElementById('table-processing-rxs');
@@ -417,59 +445,73 @@ async function renderPrescriptions() {
     if (!tableNew) return;
 
     tableNew.innerHTML        = '<tr><td colspan="5" style="text-align:center">Loading...</td></tr>';
-    tableProcessing.innerHTML = '<tr><td colspan="3" style="text-align:center">—</td></tr>';
+    tableProcessing.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading...</td></tr>';
     tableHistory.innerHTML    = '<tr><td colspan="4" style="text-align:center">Loading...</td></tr>';
 
     try {
-        const res = await apiGetPendingPrescriptions();
-
-        if (!res.success) {
-            tableNew.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#EF4444">${res.message || 'Failed to load'}</td></tr>`;
-            return;
-        }
-
-        const pending = res.data.items || [];
+        const [pendingRes, reviewCallRes, historyRes] = await Promise.all([
+            apiGetPharmacyPendingPrescriptions(),
+            apiGetPharmacyReviewCallPrescriptions(),
+            apiGetPharmacyPrescriptionHistory()
+        ]);
 
         // Tab 1 — Incoming (Pending)
-        tableNew.innerHTML = pending.map(rx => `
-            <tr>
-                <td>#${rx.id.slice(0,8)}</td>
-                <td>${rx.patientName}</td>
-                <td>${rx.doctorName || '—'}</td>
-                <td>${(rx.imageUrls && rx.imageUrls[0])
-                    ? `<a href="${rx.imageUrls[0]}" target="_blank" class="rx-view-btn"><i class='bx bx-image'></i> View RX</a>`
-                    : '—'}</td>
-                <td class="table-actions">
-                    <button class="action-btn approve" onclick="approveRx('${rx.id}','${rx.patientName}')">Approve</button>
-                    <button class="action-btn reject"  onclick="promptRxReject('${rx.id}','${rx.patientName}')">Reject</button>
-                </td>
-            </tr>
-        `).join('') || '<tr><td colspan="5" style="text-align:center">No pending prescriptions</td></tr>';
+        if (!pendingRes.success) {
+            tableNew.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#EF4444">${pendingRes.message || 'Failed to load'}</td></tr>`;
+        } else {
+            const pending = pendingRes.data.items || [];
+            tableNew.innerHTML = pending.map(rx => `
+                <tr>
+                    <td>#${rx.id.slice(0,8)}</td>
+                    <td>${rx.patientName}</td>
+                    <td>${rx.doctorName || '—'}</td>
+                    <td>${(rx.imageUrls && rx.imageUrls[0])
+                        ? `<a href="${rx.imageUrls[0]}" target="_blank" class="rx-view-btn"><i class='bx bx-image'></i> View RX</a>`
+                        : '—'}</td>
+                    <td class="table-actions">
+                        <button class="action-btn approve" onclick="approveRx('${rx.id}','${rx.patientName}')">Approve</button>
+                        <button class="action-btn reject"  onclick="promptRxReject('${rx.id}','${rx.patientName}')">Reject</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" style="text-align:center">No pending prescriptions</td></tr>';
 
-        // Tab 2 — Approved this session
-        const approved = window._rxSessionHistory.filter(r => r.status === 'Approved');
-        tableProcessing.innerHTML = approved.map(rx => `
-            <tr>
-                <td>#${rx.id.slice(0,8)}</td>
-                <td>${rx.patientName}</td>
-                <td><span class="status-badge success">Approved</span></td>
-            </tr>
-        `).join('') || '<tr><td colspan="3" style="text-align:center">No approved prescriptions this session</td></tr>';
+            const elRx = document.getElementById('stat-pending-prescriptions');
+            if (elRx) elRx.textContent = pending.length;
+        }
 
-        // Tab 3 — History this session (Approved + Rejected)
-        const histRxs = window._rxSessionHistory;
-        tableHistory.innerHTML = histRxs.map(rx => `
-            <tr>
-                <td>#${rx.id.slice(0,8)}</td>
-                <td>${rx.patientName}</td>
-                <td><span class="status-badge ${getStatusClass(rx.status)}">${rx.status}</span></td>
-                <td>${formatTime(rx.processedAt)}</td>
-            </tr>
-        `).join('') || '<tr><td colspan="4" style="text-align:center">No history this session</td></tr>';
+        // Tab 2 — Review & Call (Approved, order still active)
+        if (!reviewCallRes.success) {
+            tableProcessing.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#EF4444">${reviewCallRes.message || 'Failed to load'}</td></tr>`;
+        } else {
+            const reviewCall = reviewCallRes.data.items || [];
+            tableProcessing.innerHTML = reviewCall.map(rx => `
+                <tr>
+                    <td>#${rx.id.slice(0,8)}</td>
+                    <td>${rx.patientName}</td>
+                    <td><span class="status-badge success">Approved</span></td>
+                    <td class="table-actions">
+                        ${rx.patientPhone
+                            ? `<a href="tel:${rx.patientPhone}" class="action-btn approve"><i class='bx bx-phone'></i> Call</a>`
+                            : '<span style="color:#9CA3AF">Phone unavailable</span>'}
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" style="text-align:center">No prescriptions awaiting call</td></tr>';
+        }
 
-        // Unread count badge on prescriptions
-        const elRx = document.getElementById('stat-pending-prescriptions');
-        if (elRx) elRx.textContent = pending.length;
+        // Tab 3 — Rx History
+        if (!historyRes.success) {
+            tableHistory.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#EF4444">${historyRes.message || 'Failed to load'}</td></tr>`;
+        } else {
+            const histRxs = historyRes.data.items || [];
+            tableHistory.innerHTML = histRxs.map(rx => `
+                <tr>
+                    <td>#${rx.id.slice(0,8)}</td>
+                    <td>${rx.patientName}</td>
+                    <td><span class="status-badge ${getStatusClass(rx.status)}">${rx.status}</span></td>
+                    <td>${formatTime(rx.createdAt)}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" style="text-align:center">No prescription history</td></tr>';
+        }
 
     } catch (err) {
         console.error('renderPrescriptions error:', err);
@@ -802,7 +844,8 @@ async function renderReports() {
             if (list) {
                 list.innerHTML = notesRes.data.map(n => {
                     const date = new Date(n.rejectedAt).toLocaleDateString('en-EG');
-                    return `<li><span class="note-date">${date}</span><p>"${n.reason}"</p></li>`;
+                    const reason = (n.reason || '').replace(/^Rejected by pharmacy\.\s*Reason:\s*/i, '').trim();
+                    return `<li><span class="note-date">${date}</span><p>"${reason}"</p></li>`;
                 }).join('') || '<li><p>No rejection notes yet.</p></li>';
             }
         }

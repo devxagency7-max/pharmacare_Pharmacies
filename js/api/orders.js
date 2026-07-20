@@ -19,13 +19,15 @@ async function apiGetBranchOrders(branchId, status = '') {
     }
 }
 
-async function apiRespondToOrder(orderId, action, notes = '') {
+async function apiRespondToOrder(orderId, action, notes = '', finalPrice = null) {
     const token = localStorage.getItem('firebase_token');
     try {
+        const body = { action, notes };
+        if (action === 'accept' && finalPrice !== null) body.finalPrice = finalPrice;
         const response = await fetch(`${API_BASE}/orders/${orderId}/respond`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, notes })
+            body: JSON.stringify(body)
         });
         return await safeJson(response);
     } catch (error) {
