@@ -10,10 +10,97 @@ let _currentUser = null;
 let _pollInterval = null;
 
 // ─────────────────────────────────────────────────────────────
+// Dark Mode
+// ─────────────────────────────────────────────────────────────
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    _applyThemeIcon(newTheme);
+}
+
+function _applyThemeIcon(theme) {
+    const icon  = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    const lang  = document.documentElement.lang;
+    if (theme === 'dark') {
+        if (icon)  { icon.className = 'bx bx-sun'; }
+        if (label) { label.textContent = lang === 'ar' ? 'فاتح' : 'Light'; }
+    } else {
+        if (icon)  { icon.className = 'bx bx-moon'; }
+        if (label) { label.textContent = lang === 'ar' ? 'داكن' : 'Dark'; }
+    }
+}
+
+function _loadTheme() {
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    _applyThemeIcon(saved);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Language (EN / AR)
+// ─────────────────────────────────────────────────────────────
+
+function toggleLanguage() {
+    const html    = document.documentElement;
+    const current = html.lang || 'en';
+    const next    = current === 'en' ? 'ar' : 'en';
+    _applyLanguage(next);
+    localStorage.setItem('lang', next);
+}
+
+function _applyLanguage(lang) {
+    const html = document.documentElement;
+    html.lang = lang;
+    html.dir  = lang === 'ar' ? 'rtl' : 'ltr';
+
+    // Update language toggle button label
+    const langLabel = document.getElementById('lang-label');
+    if (langLabel) langLabel.textContent = lang === 'ar' ? 'English' : 'العربية';
+
+    // Update theme button label to match new language
+    const theme = html.getAttribute('data-theme') || 'light';
+    _applyThemeIcon(theme);
+
+    // Translate all elements with data-en / data-ar
+    document.querySelectorAll('[data-en][data-ar]').forEach(el => {
+        const text = lang === 'ar' ? el.getAttribute('data-ar') : el.getAttribute('data-en');
+        if (text !== null) el.innerHTML = text;
+    });
+
+    // Translate placeholders
+    document.querySelectorAll('[data-en-placeholder][data-ar-placeholder]').forEach(el => {
+        el.placeholder = lang === 'ar'
+            ? el.getAttribute('data-ar-placeholder')
+            : el.getAttribute('data-en-placeholder');
+    });
+
+    // Translate button text nodes (buttons that are also translated via data-en/data-ar
+    // are already handled above; this handles tab buttons whose text is set directly)
+    document.querySelectorAll('.q-tab[data-en], .rx-q-tab[data-en]').forEach(btn => {
+        const text = lang === 'ar' ? btn.getAttribute('data-ar') : btn.getAttribute('data-en');
+        if (text !== null) btn.textContent = text;
+    });
+}
+
+function _loadLanguage() {
+    const saved = localStorage.getItem('lang') || 'en';
+    _applyLanguage(saved);
+}
+
+// ─────────────────────────────────────────────────────────────
 // Bootstrap
 // ─────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Apply saved theme and language immediately (before any render)
+    _loadTheme();
+    _loadLanguage();
+
     // Guard: redirect to login if no token
     if (!localStorage.getItem('firebase_token')) {
         window.location.href = 'login.html';

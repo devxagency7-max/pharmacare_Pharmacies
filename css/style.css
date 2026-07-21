@@ -53,6 +53,202 @@
 }
 
 /* ==========================================================================
+   Dark Mode Theme
+   ========================================================================== */
+[data-theme="dark"] {
+    --bg-main:  #0F1117;
+    --bg-card:  #1A1D27;
+
+    --text-main:  #E2E8F0;
+    --text-muted: #94A3B8;
+    --text-light: #64748B;
+
+    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.5);
+
+    --gradient-card-1: linear-gradient(135deg, #1A1D27, #1E2130);
+}
+
+/* Topbar dark */
+[data-theme="dark"] .topbar {
+    background: rgba(26, 29, 39, 0.92);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Search box dark */
+[data-theme="dark"] .search-box {
+    background: #0F1117;
+    border-color: rgba(255,255,255,0.06);
+}
+[data-theme="dark"] .search-box input { color: var(--text-main); }
+[data-theme="dark"] .search-box input::placeholder { color: var(--text-muted); }
+
+/* Notification icon dark */
+[data-theme="dark"] .notification-icon { background: #0F1117; }
+[data-theme="dark"] .notification-icon:hover { background: #1E2130; }
+
+/* Profile pill dark */
+[data-theme="dark"] .profile { background: #0F1117; }
+[data-theme="dark"] .profile:hover { background: #1E2130; }
+
+/* Cards dark */
+[data-theme="dark"] .card { border-color: rgba(255,255,255,0.05); }
+[data-theme="dark"] .card-header {
+    border-color: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+}
+
+/* Stat card dark */
+[data-theme="dark"] .stat-card { border-color: rgba(255,255,255,0.05); }
+
+/* Tables dark */
+[data-theme="dark"] .data-table th {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.06);
+    color: var(--text-muted);
+}
+[data-theme="dark"] .data-table td { border-color: rgba(255,255,255,0.04); }
+[data-theme="dark"] .data-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+/* Queue tabs dark */
+[data-theme="dark"] .q-tab,
+[data-theme="dark"] .rx-q-tab {
+    background: #0F1117;
+    color: var(--text-muted);
+}
+[data-theme="dark"] .q-tab:hover,
+[data-theme="dark"] .rx-q-tab:hover { background: #1E2130; }
+[data-theme="dark"] .q-tab.active,
+[data-theme="dark"] .rx-q-tab.active { background: #1A1D27; }
+
+/* Action buttons dark */
+[data-theme="dark"] .action-btn.view { background: rgba(0,87,209,0.15); }
+[data-theme="dark"] .action-btn.approve { background: rgba(16,185,129,0.15); }
+[data-theme="dark"] .action-btn.reject { background: rgba(239,68,68,0.15); }
+
+/* Settings form dark */
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .form-group textarea {
+    background: #0F1117;
+    border-color: rgba(255,255,255,0.1);
+    color: var(--text-main);
+}
+[data-theme="dark"] .form-actions { border-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .logo-upload-container { border-color: rgba(255,255,255,0.06); }
+
+/* Summary items dark */
+[data-theme="dark"] .summary-item { background: #1A1D27; }
+
+/* Workflow alert dark */
+[data-theme="dark"] .workflow-alert.info {
+    background: rgba(0,87,209,0.12);
+    border-color: rgba(0,87,209,0.25);
+    color: #93C5FD;
+}
+[data-theme="dark"] .workflow-alert.warning {
+    background: rgba(245,158,11,0.1);
+    border-color: rgba(245,158,11,0.25);
+    color: #FCD34D;
+}
+
+/* Guide card dark */
+[data-theme="dark"] .guide-card { background: #1A1D27; }
+[data-theme="dark"] .guide-steps { background: rgba(255,255,255,0.02); }
+
+/* Feedback list dark */
+[data-theme="dark"] .feedback-list li { background: rgba(255,255,255,0.03); }
+
+/* Notification dropdown dark */
+[data-theme="dark"] .notif-dropdown {
+    background: #1A1D27;
+    border-color: rgba(255,255,255,0.08);
+}
+[data-theme="dark"] .notif-dropdown-header {
+    border-color: rgba(255,255,255,0.06);
+    color: var(--text-main);
+}
+[data-theme="dark"] .notif-dropdown-item { border-color: rgba(255,255,255,0.04); }
+[data-theme="dark"] .notif-dropdown-item:hover { background: rgba(255,255,255,0.04); }
+[data-theme="dark"] .notif-item-title { color: var(--text-main); }
+
+/* Modal dark */
+[data-theme="dark"] .modal-content { background: #1A1D27; }
+[data-theme="dark"] .modal-actions { border-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .order-info-section { background: #0F1117; }
+[data-theme="dark"] .modal-body .form-group textarea {
+    background: #0F1117;
+    border-color: rgba(255,255,255,0.1);
+    color: var(--text-main);
+}
+
+/* Branch card dark */
+[data-theme="dark"] .branch-card { border-color: rgba(255,255,255,0.05); }
+[data-theme="dark"] .branch-card-actions { background: rgba(255,255,255,0.02); }
+
+/* Progress bar dark */
+[data-theme="dark"] .progress-bar { background: rgba(255,255,255,0.08); }
+
+/* ==========================================================================
+   RTL (Arabic) Layout
+   ========================================================================== */
+[dir="rtl"] body { font-family: 'Cairo', 'Inter', sans-serif; }
+[dir="rtl"] .sidebar { left: auto; right: 0; }
+[dir="rtl"] .main-content { left: auto; right: var(--sidebar-width); }
+[dir="rtl"] .sidebar.close ~ .main-content { right: var(--sidebar-width-collapsed); }
+[dir="rtl"] .data-table { text-align: right; }
+[dir="rtl"] .table-actions { justify-content: flex-end; }
+[dir="rtl"] .guide-card { border-left: none; border-right: 5px solid var(--primary); }
+[dir="rtl"] .feedback-list li { border-right: none; border-left: 4px solid #EF4444; }
+[dir="rtl"] .notif-dropdown-item.unread { border-left: none; border-right: 3px solid #0057d1; }
+[dir="rtl"] .nav-links li a .link-name { margin-left: 0; margin-right: 10px; }
+[dir="rtl"] .logout-btn .link-name { margin-left: 0; margin-right: 10px; }
+[dir="rtl"] .notification-item { border-left: none; border-right: 4px solid var(--primary); }
+
+/* Theme & Language toggle button */
+.topbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ctrl-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1.5px solid rgba(79,143,234,0.2);
+    border-radius: 50px;
+    background: var(--bg-main);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.ctrl-btn:hover {
+    background: #EAF2FE;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.ctrl-btn i { font-size: 17px; }
+
+[data-theme="dark"] .ctrl-btn {
+    background: #0F1117;
+    border-color: rgba(255,255,255,0.1);
+    color: var(--text-muted);
+}
+[data-theme="dark"] .ctrl-btn:hover {
+    background: #1E2130;
+    color: #93C5FD;
+    border-color: rgba(147,197,253,0.4);
+}
+
+/* ==========================================================================
    Reset & Base Styles
    ========================================================================== */
 * {

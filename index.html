@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- Custom CSS -->
@@ -35,31 +35,31 @@
             <li>
                 <a data-section="dashboard" class="nav-item active">
                     <i class='bx bx-grid-alt'></i>
-                    <span class="link-name">Dashboard</span>
+                    <span class="link-name" data-en="Dashboard" data-ar="الرئيسية">Dashboard</span>
                 </a>
             </li>
             <li>
                 <a data-section="orders" class="nav-item">
                     <i class='bx bx-cart-alt'></i>
-                    <span class="link-name">Orders</span>
+                    <span class="link-name" data-en="Orders" data-ar="الطلبات">Orders</span>
                 </a>
             </li>
             <li>
                 <a data-section="prescriptions" class="nav-item">
                     <i class='bx bx-receipt'></i>
-                    <span class="link-name">Prescriptions</span>
+                    <span class="link-name" data-en="Prescriptions" data-ar="الوصفات">Prescriptions</span>
                 </a>
             </li>
             <li>
                 <a data-section="reports" class="nav-item">
                     <i class='bx bx-bar-chart-alt-2'></i>
-                    <span class="link-name">Reports</span>
+                    <span class="link-name" data-en="Reports" data-ar="التقارير">Reports</span>
                 </a>
             </li>
             <li>
                 <a data-section="settings" class="nav-item">
                     <i class='bx bx-cog'></i>
-                    <span class="link-name">Settings</span>
+                    <span class="link-name" data-en="Settings" data-ar="الإعدادات">Settings</span>
                 </a>
             </li>
         </ul>
@@ -67,7 +67,7 @@
         <div class="sidebar-footer">
             <a href="login.html" class="logout-btn">
                 <i class='bx bx-log-out'></i>
-                <span class="link-name">Logout</span>
+                <span class="link-name" data-en="Logout" data-ar="تسجيل الخروج">Logout</span>
             </a>
         </div>
     </aside>
@@ -78,10 +78,22 @@
         <header class="topbar">
             <div class="search-box">
                 <i class='bx bx-search'></i>
-                <input type="text" placeholder="Search orders, meds...">
+                <input type="text" id="search-input" data-en-placeholder="Search orders, meds..." data-ar-placeholder="ابحث عن طلبات، أدوية..." placeholder="Search orders, meds...">
             </div>
 
             <div class="topbar-right">
+                <!-- Controls: Language + Dark Mode -->
+                <div class="topbar-controls">
+                    <button class="ctrl-btn" id="lang-toggle" onclick="toggleLanguage()" title="Switch Language">
+                        <i class='bx bx-globe'></i>
+                        <span id="lang-label">العربية</span>
+                    </button>
+                    <button class="ctrl-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+                        <i class='bx bx-moon' id="theme-icon"></i>
+                        <span id="theme-label" data-en="Dark" data-ar="داكن">Dark</span>
+                    </button>
+                </div>
+
                 <div class="notification-icon" id="notif-toggle" onclick="toggleNotifDropdown()" style="cursor:pointer">
                     <i class='bx bx-bell'></i>
                     <span class="badge" id="notif-badge" style="display:none"></span>
@@ -89,11 +101,11 @@
                 <!-- Notifications Dropdown -->
                 <div class="notif-dropdown" id="notif-dropdown" style="display:none">
                     <div class="notif-dropdown-header">
-                        <span>Notifications</span>
-                        <button onclick="markAllNotifsRead()" class="notif-mark-all">Mark all read</button>
+                        <span data-en="Notifications" data-ar="الإشعارات">Notifications</span>
+                        <button onclick="markAllNotifsRead()" class="notif-mark-all" data-en="Mark all read" data-ar="تعليم الكل كمقروء">Mark all read</button>
                     </div>
                     <div class="notif-dropdown-list" id="notif-dropdown-list">
-                        <p style="text-align:center;padding:20px;color:#94A3B8">Loading...</p>
+                        <p style="text-align:center;padding:20px;color:#94A3B8" data-en="Loading..." data-ar="جاري التحميل...">Loading...</p>
                     </div>
                 </div>
                 <div class="profile">
@@ -101,7 +113,7 @@
                         alt="Pharmacy Profile">
                     <div class="profile-info">
                         <span class="name">Abdallah Mohamed Fathy</span>
-                        <span class="role">Pharmacy</span>
+                        <span class="role" data-en="Pharmacy" data-ar="صيدلية">Pharmacy</span>
                     </div>
                 </div>
             </div>
@@ -113,8 +125,8 @@
             <!-- Dashboard / Analysis Section -->
             <section id="dashboard" class="section-content">
                 <div class="page-header">
-                    <h1>Pharmacy Analysis</h1>
-                    <p>Performance metrics and business insights.</p>
+                    <h1 data-en="Pharmacy Analysis" data-ar="تحليل الصيدلية">Pharmacy Analysis</h1>
+                    <p data-en="Performance metrics and business insights." data-ar="مؤشرات الأداء ورؤى الأعمال.">Performance metrics and business insights.</p>
                 </div>
 
                 <!-- Instructional Guide for Owner -->
@@ -122,21 +134,21 @@
                     <div class="card-header">
                         <div class="header-left">
                             <i class='bx bx-info-circle'></i>
-                            <h3>Pharmacy Workflow Guide</h3>
+                            <h3 data-en="Pharmacy Workflow Guide" data-ar="دليل سير العمل">Pharmacy Workflow Guide</h3>
                         </div>
                     </div>
                     <div class="guide-steps">
                         <div class="step">
                             <span class="step-num">1</span>
-                            <p><strong>Incoming:</strong> New orders waiting for you to check stock.</p>
+                            <p data-en="<strong>Incoming:</strong> New orders waiting for you to check stock." data-ar="<strong>الوارد:</strong> طلبات جديدة تنتظر مراجعتك."><strong>Incoming:</strong> New orders waiting for you to check stock.</p>
                         </div>
                         <div class="step">
                             <span class="step-num">2</span>
-                            <p><strong>Processing:</strong> Orders you accepted. Call the patient now!</p>
+                            <p data-en="<strong>Processing:</strong> Orders you accepted. Call the patient now!" data-ar="<strong>قيد التنفيذ:</strong> الطلبات التي قبلتها. اتصل بالمريض الآن!"><strong>Processing:</strong> Orders you accepted. Call the patient now!</p>
                         </div>
                         <div class="step">
                             <span class="step-num">3</span>
-                            <p><strong>History:</strong> Completed and archived orders.</p>
+                            <p data-en="<strong>History:</strong> Completed and archived orders." data-ar="<strong>السجل:</strong> الطلبات المكتملة والمؤرشفة."><strong>History:</strong> Completed and archived orders.</p>
                         </div>
                     </div>
                 </div>
@@ -146,28 +158,28 @@
                     <div class="stat-card">
                         <div class="stat-icon warning"><i class='bx bx-plus-circle'></i></div>
                         <div class="stat-details">
-                            <h3>Pending</h3>
+                            <h3 data-en="Pending" data-ar="انتظار">Pending</h3>
                             <h2 id="stat-pending-orders">…</h2>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon primary"><i class='bx bx-phone-call'></i></div>
                         <div class="stat-details">
-                            <h3>Processing</h3>
+                            <h3 data-en="Processing" data-ar="جاري التنفيذ">Processing</h3>
                             <h2 id="stat-processing-orders">…</h2>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon success"><i class='bx bx-check-circle'></i></div>
                         <div class="stat-details">
-                            <h3>Completed</h3>
+                            <h3 data-en="Completed" data-ar="مكتمل">Completed</h3>
                             <h2 id="stat-confirmed-orders">…</h2>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon danger"><i class='bx bx-x-circle'></i></div>
                         <div class="stat-details">
-                            <h3>Rejected</h3>
+                            <h3 data-en="Rejected" data-ar="مرفوض">Rejected</h3>
                             <h2 id="stat-rejected-orders">…</h2>
                         </div>
                     </div>
@@ -176,15 +188,32 @@
                 <div class="dashboard-grid">
                     <div class="card">
                         <div class="card-header">
-                            <h3>Order Trends</h3>
+                            <h3 data-en="Order Trends" data-ar="اتجاهات الطلبات">Order Trends</h3>
                         </div>
                         <div class="card-body"><canvas id="ordersTrendChart"></canvas></div>
                     </div>
                     <div class="card">
                         <div class="card-header">
-                            <h3>Performance Analysis</h3>
+                            <h3 data-en="Performance Analysis" data-ar="تحليل الأداء">Performance Analysis</h3>
                         </div>
-                        <div class="card-body"><canvas id="topSellingChart"></canvas></div>
+                        <div class="card-body">
+                            <div style="display:flex;flex-direction:column;gap:20px;padding:10px 0;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--bg-main);border-radius:12px;">
+                                    <div>
+                                        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;" data-en="Avg. Response Time" data-ar="متوسط وقت الاستجابة">Avg. Response Time</div>
+                                        <div style="font-size:22px;font-weight:700;color:var(--primary);" id="perf-avg-response">…</div>
+                                    </div>
+                                    <i class='bx bx-time-five' style="font-size:32px;color:var(--primary);opacity:0.4;"></i>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--bg-main);border-radius:12px;">
+                                    <div>
+                                        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;" data-en="Avg. Fulfillment Time" data-ar="متوسط وقت التنفيذ">Avg. Fulfillment Time</div>
+                                        <div style="font-size:22px;font-weight:700;color:var(--success);" id="perf-avg-fulfillment">…</div>
+                                    </div>
+                                    <i class='bx bx-check-double' style="font-size:32px;color:var(--success);opacity:0.4;"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -192,24 +221,21 @@
             <!-- Orders Management Section -->
             <section id="orders" class="section-content">
                 <div class="page-header">
-                    <h1>Order Management</h1>
-                    <p>Handle incoming requests and coordinate with patients.</p>
+                    <h1 data-en="Order Management" data-ar="إدارة الطلبات">Order Management</h1>
+                    <p data-en="Handle incoming requests and coordinate with patients." data-ar="إدارة الطلبات الواردة والتنسيق مع المرضى.">Handle incoming requests and coordinate with patients.</p>
                 </div>
 
                 <div class="workflow-alert info">
                     <i class='bx bx-bulb'></i>
-                    <p><strong>How to manage orders:</strong> 1. Check <strong>Incoming</strong> for new requests. 2.
-                        <strong>Accept</strong> if you have the meds. 3. Go to <strong>Processing</strong> to get the
-                        patient's number and call them. 4. <strong>Confirm</strong> the order once delivered!</p>
+                    <p data-en="<strong>How to manage orders:</strong> 1. Check <strong>Incoming</strong> for new requests. 2. <strong>Accept</strong> if you have the meds. 3. Go to <strong>Processing</strong> to get the patient's number and call them. 4. <strong>Confirm</strong> the order once delivered!" data-ar="<strong>كيفية إدارة الطلبات:</strong> 1. تحقق من <strong>الوارد</strong> للطلبات الجديدة. 2. <strong>اقبل</strong> إذا توفرت الأدوية. 3. اذهب إلى <strong>قيد التنفيذ</strong> للحصول على رقم المريض والاتصال به. 4. <strong>أكّد</strong> الطلب عند التسليم!"><strong>How to manage orders:</strong> 1. Check <strong>Incoming</strong> for new requests. 2. <strong>Accept</strong> if you have the meds. 3. Go to <strong>Processing</strong> to get the patient's number and call them. 4. <strong>Confirm</strong> the order once delivered!</p>
                 </div>
 
-                <!-- Live Queue Management moved here -->
                 <div class="card live-queue-card">
                     <div class="card-header queue-header">
                         <div class="queue-tabs">
-                            <button class="q-tab active" onclick="switchQueueTab('new')">Incoming</button>
-                            <button class="q-tab" onclick="switchQueueTab('processing')">Processing (Need Call)</button>
-                            <button class="q-tab" onclick="switchQueueTab('history')">History</button>
+                            <button class="q-tab active" onclick="switchQueueTab('new')" data-en="Incoming" data-ar="الوارد">Incoming</button>
+                            <button class="q-tab" onclick="switchQueueTab('processing')" data-en="Processing (Need Call)" data-ar="قيد التنفيذ (يحتاج اتصال)">Processing (Need Call)</button>
+                            <button class="q-tab" onclick="switchQueueTab('history')" data-en="History" data-ar="السجل">History</button>
                         </div>
                     </div>
 
@@ -218,11 +244,11 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Order ID</th>
-                                        <th>Customer</th>
-                                        <th>Items</th>
-                                        <th>Time</th>
-                                        <th>Actions</th>
+                                        <th data-en="Order ID" data-ar="رقم الطلب">Order ID</th>
+                                        <th data-en="Customer" data-ar="العميل">Customer</th>
+                                        <th data-en="Items" data-ar="المنتجات">Items</th>
+                                        <th data-en="Time" data-ar="الوقت">Time</th>
+                                        <th data-en="Actions" data-ar="الإجراءات">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-new-orders"></tbody>
@@ -233,10 +259,10 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Order ID</th>
-                                        <th>Customer</th>
-                                        <th>Notes</th>
-                                        <th>Actions</th>
+                                        <th data-en="Order ID" data-ar="رقم الطلب">Order ID</th>
+                                        <th data-en="Customer" data-ar="العميل">Customer</th>
+                                        <th data-en="Notes" data-ar="ملاحظات">Notes</th>
+                                        <th data-en="Actions" data-ar="الإجراءات">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-processing-orders"></tbody>
@@ -247,10 +273,10 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Order ID</th>
-                                        <th>Customer</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+                                        <th data-en="Order ID" data-ar="رقم الطلب">Order ID</th>
+                                        <th data-en="Customer" data-ar="العميل">Customer</th>
+                                        <th data-en="Status" data-ar="الحالة">Status</th>
+                                        <th data-en="Date" data-ar="التاريخ">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-history-orders"></tbody>
@@ -262,66 +288,64 @@
 
             <section id="prescriptions" class="section-content">
                 <div class="page-header">
-                    <h1>Prescription Requests <span id="stat-pending-prescriptions" style="background:#EF4444;color:#fff;font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;margin-left:8px;display:inline-block;"></span></h1>
-                    <p>Review patient prescriptions and coordinate medication orders.</p>
+                    <h1>
+                        <span data-en="Prescription Requests" data-ar="طلبات الوصفات">Prescription Requests</span>
+                        <span id="stat-pending-prescriptions" style="background:#EF4444;color:#fff;font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px;margin-left:8px;display:inline-block;"></span>
+                    </h1>
+                    <p data-en="Review patient prescriptions and coordinate medication orders." data-ar="راجع وصفات المرضى ونسّق طلبات الأدوية.">Review patient prescriptions and coordinate medication orders.</p>
                 </div>
 
                 <div class="workflow-alert warning">
                     <i class='bx bx-image-alt'></i>
-                    <p><strong>Handling Prescriptions:</strong> Review the <strong>RX Image</strong> first. If the
-                        medication is available, <strong>Accept</strong> to unlock the patient's contact details for
-                        coordination.</p>
+                    <p data-en="<strong>Handling Prescriptions:</strong> Review the <strong>RX Image</strong> first. If the medication is available, <strong>Accept</strong> to unlock the patient's contact details for coordination." data-ar="<strong>التعامل مع الوصفات:</strong> راجع <strong>صورة الوصفة</strong> أولاً. إذا كانت الأدوية متوفرة، <strong>اقبل</strong> للوصول إلى بيانات التواصل مع المريض."><strong>Handling Prescriptions:</strong> Review the <strong>RX Image</strong> first. If the medication is available, <strong>Accept</strong> to unlock the patient's contact details for coordination.</p>
                 </div>
 
                 <div class="card live-queue-card">
                     <div class="card-header queue-header">
                         <div class="queue-tabs">
-                            <button class="rx-q-tab active" onclick="switchRxQueueTab('new')">Incoming Rxs</button>
-                            <button class="rx-q-tab" onclick="switchRxQueueTab('processing')">Review & Call</button>
-                            <button class="rx-q-tab" onclick="switchRxQueueTab('history')">Rx History</button>
+                            <button class="rx-q-tab active" onclick="switchRxQueueTab('new')" data-en="Incoming Rxs" data-ar="وصفات واردة">Incoming Rxs</button>
+                            <button class="rx-q-tab" onclick="switchRxQueueTab('processing')" data-en="Review &amp; Call" data-ar="مراجعة واتصال">Review &amp; Call</button>
+                            <button class="rx-q-tab" onclick="switchRxQueueTab('history')" data-en="Rx History" data-ar="سجل الوصفات">Rx History</button>
                         </div>
                     </div>
 
                     <div class="table-container">
-                        <!-- Table for NEW Prescriptions -->
                         <div id="rx-q-new-content" class="rx-q-pane active">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>RX ID</th>
-                                        <th>Patient</th>
-                                        <th>Image</th>
-                                        <th>Actions</th>
+                                        <th data-en="RX ID" data-ar="رقم الوصفة">RX ID</th>
+                                        <th data-en="Patient" data-ar="المريض">Patient</th>
+                                        <th data-en="Image" data-ar="الصورة">Image</th>
+                                        <th data-en="Actions" data-ar="الإجراءات">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-new-rxs"></tbody>
                             </table>
                         </div>
 
-                        <!-- Table for PROCESSING Prescriptions -->
                         <div id="rx-q-processing-content" class="rx-q-pane">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>RX ID</th>
-                                        <th>Patient</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th data-en="RX ID" data-ar="رقم الوصفة">RX ID</th>
+                                        <th data-en="Patient" data-ar="المريض">Patient</th>
+                                        <th data-en="Status" data-ar="الحالة">Status</th>
+                                        <th data-en="Actions" data-ar="الإجراءات">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-processing-rxs"></tbody>
                             </table>
                         </div>
 
-                        <!-- Table for HISTORY Prescriptions -->
                         <div id="rx-q-history-content" class="rx-q-pane">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>RX ID</th>
-                                        <th>Patient</th>
-                                        <th>Final Status</th>
-                                        <th>Date</th>
+                                        <th data-en="RX ID" data-ar="رقم الوصفة">RX ID</th>
+                                        <th data-en="Patient" data-ar="المريض">Patient</th>
+                                        <th data-en="Final Status" data-ar="الحالة النهائية">Final Status</th>
+                                        <th data-en="Date" data-ar="التاريخ">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-history-rxs"></tbody>
@@ -331,144 +355,103 @@
                 </div>
             </section>
 
-
-
             <!-- Reports Section -->
             <section id="reports" class="section-content">
                 <div class="page-header">
-                    <h1>Business Insights</h1>
-                    <p>Detailed analysis of your pharmacy performance and market needs.</p>
+                    <h1 data-en="Business Insights" data-ar="رؤى الأعمال">Business Insights</h1>
+                    <p data-en="Detailed analysis of your pharmacy performance and market needs." data-ar="تحليل مفصل لأداء صيدليتك واحتياجات السوق.">Detailed analysis of your pharmacy performance and market needs.</p>
                 </div>
 
-                <!-- Summary Row (Easy to understand) -->
                 <div class="reports-summary-grid">
                     <div class="summary-item">
-                        <span>Total Requests</span>
+                        <span data-en="Total Requests" data-ar="إجمالي الطلبات">Total Requests</span>
                         <h2 id="rpt-total-requests">…</h2>
-                        <small class="up"><i class='bx bx-trending-up'></i> Total Patient Interest</small>
+                        <small class="up"><i class='bx bx-trending-up'></i> <span data-en="Total Patient Interest" data-ar="إجمالي اهتمام المرضى">Total Patient Interest</span></small>
                     </div>
                     <div class="summary-item">
-                        <span>Order Success Rate</span>
+                        <span data-en="Order Success Rate" data-ar="معدل نجاح الطلبات">Order Success Rate</span>
                         <h2 id="rpt-success-rate">…</h2>
-                        <small class="up"><i class='bx bx-check-double'></i> Completed Successfully</small>
+                        <small class="up"><i class='bx bx-check-double'></i> <span data-en="Completed Successfully" data-ar="مكتملة بنجاح">Completed Successfully</span></small>
                     </div>
                     <div class="summary-item">
-                        <span>Rejected Orders</span>
+                        <span data-en="Rejected Orders" data-ar="الطلبات المرفوضة">Rejected Orders</span>
                         <h2 id="rpt-rejected-orders" class="danger-text">…</h2>
-                        <small class="danger-text"><i class='bx bx-block'></i> Total Rejected</small>
+                        <small class="danger-text"><i class='bx bx-block'></i> <span data-en="Total Rejected" data-ar="إجمالي المرفوض">Total Rejected</span></small>
                     </div>
                 </div>
 
                 <div class="reports-grid">
-                    <!-- Order Source Analysis (Prescription vs Manual) -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Order Source Analysis</h3>
+                            <h3 data-en="Order Source Analysis" data-ar="تحليل مصادر الطلبات">Order Source Analysis</h3>
                         </div>
                         <div class="card-body">
                             <canvas id="orderSourceChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Fulfillment Trend -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Monthly Fulfillment Trend</h3>
+                            <h3 data-en="Monthly Fulfillment Trend" data-ar="اتجاه التنفيذ الشهري">Monthly Fulfillment Trend</h3>
                         </div>
                         <div class="card-body">
                             <canvas id="fulfillmentTrendChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Missed Items Analysis (Out of Stock) -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Inventory Gaps (Rejected Items)</h3>
+                            <h3 data-en="Inventory Gaps (Rejected Items)" data-ar="فجوات المخزون (المنتجات المرفوضة)">Inventory Gaps (Rejected Items)</h3>
                         </div>
                         <div class="card-body">
                             <canvas id="inventoryGapsChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Recent Rejection Feedback (Natural Language) -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Rejection Feedback Notes</h3>
+                            <h3 data-en="Rejection Feedback Notes" data-ar="ملاحظات الرفض">Rejection Feedback Notes</h3>
                         </div>
                         <div class="card-body">
-                            <ul class="feedback-list" id="rejection-notes-list">
-                            </ul>
+                            <ul class="feedback-list" id="rejection-notes-list"></ul>
                         </div>
                     </div>
 
-                    <!-- Top Requested Items List -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>Most Requested Medications</h3>
+                            <h3 data-en="Most Requested Medications" data-ar="الأدوية الأكثر طلباً">Most Requested Medications</h3>
                         </div>
                         <div class="card-body">
-                            <ul class="top-items-list" id="top-requested-list">
-                                <!-- Dynamic List -->
-                                <li>
-                                    <div class="item-info">
-                                        <span class="item-name">Panadol Extra</span>
-                                        <span class="item-count">142 Requests</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress" style="width: 85%;"></div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="item-info">
-                                        <span class="item-name">August 1g</span>
-                                        <span class="item-count">98 Requests</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress" style="width: 65%;"></div>
-                                    </div>
-                                </li>
-                                <li>
-                                    <div class="item-info">
-                                        <span class="item-name">Concor 5mg</span>
-                                        <span class="item-count">76 Requests</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress" style="width: 50%;"></div>
-                                    </div>
-                                </li>
-                            </ul>
+                            <ul class="top-items-list" id="top-requested-list"></ul>
                         </div>
                     </div>
                 </div>
             </section>
 
-
-
             <section id="chat" class="section-content">
                 <div class="page-header">
-                    <h1>Chat</h1>
-                    <p>Direct communication with patients coming soon.</p>
+                    <h1 data-en="Chat" data-ar="المحادثات">Chat</h1>
+                    <p data-en="Direct communication with patients coming soon." data-ar="التواصل المباشر مع المرضى قريباً.">Direct communication with patients coming soon.</p>
                 </div>
             </section>
 
             <!-- Settings Section -->
             <section id="settings" class="section-content">
                 <div class="page-header">
-                    <h1>Pharmacy Settings</h1>
-                    <p>Manage your public profile and service availability.</p>
+                    <h1 data-en="Pharmacy Settings" data-ar="إعدادات الصيدلية">Pharmacy Settings</h1>
+                    <p data-en="Manage your public profile and service availability." data-ar="إدارة ملفك العام ومدى توافر الخدمة.">Manage your public profile and service availability.</p>
                 </div>
 
                 <div class="settings-grid">
-                    <!-- Availability Status Card -->
                     <div class="card status-settings-card">
                         <div class="card-header">
-                            <h3><i class='bx bx-power-off'></i> Service Status</h3>
+                            <h3><i class='bx bx-power-off'></i> <span data-en="Service Status" data-ar="حالة الخدمة">Service Status</span></h3>
                         </div>
                         <div class="card-body">
                             <div class="status-control">
                                 <div class="status-info">
-                                    <h4 id="status-text">Your Pharmacy is currently OPEN</h4>
-                                    <p>Patients can see you and send requests.</p>
+                                    <h4 id="status-text" data-en="Your Pharmacy is currently OPEN" data-ar="صيدليتك مفتوحة حالياً">Your Pharmacy is currently OPEN</h4>
+                                    <p data-en="Patients can see you and send requests." data-ar="يمكن للمرضى رؤيتك وإرسال الطلبات.">Patients can see you and send requests.</p>
                                 </div>
                                 <label class="switch-large">
                                     <input type="checkbox" id="pharmacy-status-check" checked onchange="updatePharmacyStatus()">
@@ -478,13 +461,11 @@
                         </div>
                     </div>
 
-                    <!-- Profile Settings Card -->
                     <div class="card profile-settings-card">
                         <div class="card-header">
-                            <h3><i class='bx bx-store-alt'></i> Public Profile (Visible to Patients)</h3>
+                            <h3><i class='bx bx-store-alt'></i> <span data-en="Public Profile (Visible to Patients)" data-ar="الملف العام (مرئي للمرضى)">Public Profile (Visible to Patients)</span></h3>
                         </div>
                         <div class="card-body">
-                            <!-- Logo Upload Section -->
                             <div class="logo-upload-container">
                                 <div class="logo-preview">
                                     <img src="https://ui-avatars.com/api/?name=Abdallah+Mohamed+Fathy&background=0D8ABC&color=fff" id="profile-logo-preview" alt="Logo Preview">
@@ -493,28 +474,28 @@
                                     </label>
                                 </div>
                                 <div class="logo-upload-info">
-                                    <h4>Pharmacy Logo</h4>
-                                    <p>JPG or PNG. Max size of 800K</p>
+                                    <h4 data-en="Pharmacy Logo" data-ar="شعار الصيدلية">Pharmacy Logo</h4>
+                                    <p data-en="JPG or PNG. Max size of 800K" data-ar="JPG أو PNG. الحجم الأقصى 800 كيلوبايت">JPG or PNG. Max size of 800K</p>
                                     <input type="file" id="pharmacy-logo-input" accept="image/*" style="display: none;" onchange="previewPharmacyLogo(event)">
-                                    <button type="button" class="action-btn view" onclick="document.getElementById('pharmacy-logo-input').click()">Choose New Logo</button>
+                                    <button type="button" class="action-btn view" onclick="document.getElementById('pharmacy-logo-input').click()" data-en="Choose New Logo" data-ar="اختر شعاراً جديداً">Choose New Logo</button>
                                 </div>
                             </div>
 
                             <form id="pharmacy-profile-form" class="settings-form" onsubmit="savePharmacyProfile(event)">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label>Pharmacy Name</label>
+                                        <label data-en="Pharmacy Name" data-ar="اسم الصيدلية">Pharmacy Name</label>
                                         <input type="text" id="set-pharmacy-name" value="Abdallah Mohamed Fathy" placeholder="e.g. Draya Pharmacy">
                                     </div>
                                     <div class="form-group">
-                                        <label>License Number</label>
+                                        <label data-en="License Number" data-ar="رقم الترخيص">License Number</label>
                                         <input type="text" id="set-pharmacy-license" value="434567898765" readonly>
-                                        <small>License number is managed by admin</small>
+                                        <small data-en="License number is managed by admin" data-ar="رقم الترخيص يديره المسؤول">License number is managed by admin</small>
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label>Governorate (المحافظة)</label>
+                                        <label data-en="Governorate" data-ar="المحافظة">Governorate (المحافظة)</label>
                                         <select id="set-pharmacy-gov">
                                             <option value="Cairo" selected>Cairo (القاهرة)</option>
                                             <option value="Giza">Giza (الجيزة)</option>
@@ -525,16 +506,16 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label>Detailed Address</label>
+                                        <label data-en="Detailed Address" data-ar="العنوان التفصيلي">Detailed Address</label>
                                         <input type="text" id="set-pharmacy-address" value="New Cairo, District 5" placeholder="Building, Street, Landmark">
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label>Working Hours Description</label>
+                                    <label data-en="Working Hours Description" data-ar="أوقات العمل">Working Hours Description</label>
                                     <input type="text" id="set-pharmacy-hours" value="Daily from 9 AM to 11 PM" placeholder="e.g. 24/7 or specific hours">
                                 </div>
                                 <div class="form-actions">
-                                    <button type="submit" class="action-btn approve">Save Changes</button>
+                                    <button type="submit" class="action-btn approve" data-en="Save Changes" data-ar="حفظ التغييرات">Save Changes</button>
                                 </div>
                             </form>
                         </div>
@@ -549,54 +530,44 @@
     <div id="order-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-order-id">Order Details</h2>
+                <h2 id="modal-order-id" data-en="Order Details" data-ar="تفاصيل الطلب">Order Details</h2>
                 <span class="close-modal">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="order-info-section">
                     <div class="info-group">
-                        <label>Patient Name:</label>
+                        <label data-en="Patient Name:" data-ar="اسم المريض:">Patient Name:</label>
                         <span id="modal-patient-name">---</span>
                     </div>
                     <div class="info-group">
-                        <label>Phone Number:</label>
+                        <label data-en="Phone Number:" data-ar="رقم الهاتف:">Phone Number:</label>
                         <span id="modal-patient-phone" class="phone-highlight">---</span>
-                        <small>(Call to coordinate delivery)</small>
+                        <small data-en="(Call to coordinate delivery)" data-ar="(اتصل لتنسيق التسليم)">(Call to coordinate delivery)</small>
                     </div>
                 </div>
 
                 <div class="order-items-list">
-                    <h3>Requested Items</h3>
-                    <ul id="modal-items-list">
-                        <!-- Dynamic items -->
-                    </ul>
+                    <h3 data-en="Requested Items" data-ar="المنتجات المطلوبة">Requested Items</h3>
+                    <ul id="modal-items-list"></ul>
                 </div>
 
                 <div id="rejection-reason-box" class="form-group" style="display: none;">
-                    <label>Rejection Note (Reason):</label>
-                    <textarea id="rejection-note" placeholder="e.g. Panadol is out of stock..."></textarea>
+                    <label data-en="Rejection Note (Reason):" data-ar="سبب الرفض:">Rejection Note (Reason):</label>
+                    <textarea id="rejection-note" data-en-placeholder="e.g. Panadol is out of stock..." data-ar-placeholder="مثال: بانادول غير متوفر..." placeholder="e.g. Panadol is out of stock..."></textarea>
                 </div>
 
                 <div class="modal-actions">
-                    <!-- Stage 1: New Order -->
                     <div id="stage-new" class="action-group">
-                        <button class="action-btn approve" onclick="handleOrderAction('accept')">Accept (Meds
-                            Available)</button>
-                        <button class="action-btn reject" onclick="showRejectionInput()">Reject</button>
+                        <button class="action-btn approve" onclick="handleOrderAction('accept')" data-en="Accept (Meds Available)" data-ar="قبول (الأدوية متوفرة)">Accept (Meds Available)</button>
+                        <button class="action-btn reject" onclick="showRejectionInput()" data-en="Reject" data-ar="رفض">Reject</button>
                     </div>
-
-                    <!-- Stage 2: Rejection Confirmation -->
                     <div id="stage-reject" class="action-group" style="display: none;">
-                        <button class="action-btn reject" onclick="handleOrderAction('reject-confirm')">Confirm
-                            Rejection</button>
-                        <button class="action-btn view" onclick="hideRejectionInput()">Back</button>
+                        <button class="action-btn reject" onclick="handleOrderAction('reject-confirm')" data-en="Confirm Rejection" data-ar="تأكيد الرفض">Confirm Rejection</button>
+                        <button class="action-btn view" onclick="hideRejectionInput()" data-en="Back" data-ar="رجوع">Back</button>
                     </div>
-
-                    <!-- Stage 3: After Accept (Call stage) -->
                     <div id="stage-call" class="action-group" style="display: none;">
-                        <button class="action-btn approve" onclick="handleOrderAction('confirm')">Confirm Order
-                            (Done)</button>
-                        <button class="action-btn reject" onclick="handleOrderAction('cancel')">Cancel Order</button>
+                        <button class="action-btn approve" onclick="handleOrderAction('confirm')" data-en="Confirm Order (Done)" data-ar="تأكيد الطلب (تم)">Confirm Order (Done)</button>
+                        <button class="action-btn reject" onclick="handleOrderAction('cancel')" data-en="Cancel Order" data-ar="إلغاء الطلب">Cancel Order</button>
                     </div>
                 </div>
             </div>
@@ -607,42 +578,42 @@
     <div id="branch-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Add New Branch</h2>
+                <h2 data-en="Add New Branch" data-ar="إضافة فرع جديد">Add New Branch</h2>
                 <span class="close-modal" onclick="closeAddBranchModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <form id="add-branch-form" onsubmit="handleAuthAddBranch(event)">
                     <div class="form-group">
-                        <label>Branch Name</label>
-                        <input type="text" id="branch-name" placeholder="e.g. Nasr City Branch" required>
+                        <label data-en="Branch Name" data-ar="اسم الفرع">Branch Name</label>
+                        <input type="text" id="branch-name" data-en-placeholder="e.g. Nasr City Branch" data-ar-placeholder="مثال: فرع مدينة نصر" placeholder="e.g. Nasr City Branch" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>City <span style="color:#EF4444">*</span></label>
-                            <input type="text" id="branch-city" placeholder="e.g. Cairo, Giza, Alexandria" required>
+                            <label><span data-en="City" data-ar="المدينة">City</span> <span style="color:#EF4444">*</span></label>
+                            <input type="text" id="branch-city" data-en-placeholder="e.g. Cairo, Giza, Alexandria" data-ar-placeholder="مثال: القاهرة، الجيزة، الإسكندرية" placeholder="e.g. Cairo, Giza, Alexandria" required>
                         </div>
                         <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="text" id="branch-phone" placeholder="e.g. 010...">
+                            <label data-en="Phone Number" data-ar="رقم الهاتف">Phone Number</label>
+                            <input type="text" id="branch-phone" data-en-placeholder="e.g. 010..." data-ar-placeholder="مثال: 010..." placeholder="e.g. 010...">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Detailed Address</label>
-                        <textarea id="branch-address" placeholder="Building, Street, Landmark..." required></textarea>
+                        <label data-en="Detailed Address" data-ar="العنوان التفصيلي">Detailed Address</label>
+                        <textarea id="branch-address" data-en-placeholder="Building, Street, Landmark..." data-ar-placeholder="المبنى، الشارع، المعلم..." placeholder="Building, Street, Landmark..." required></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Latitude (Optional)</label>
+                            <label data-en="Latitude (Optional)" data-ar="خط العرض (اختياري)">Latitude (Optional)</label>
                             <input type="number" step="any" id="branch-lat" placeholder="30.0444">
                         </div>
                         <div class="form-group">
-                            <label>Longitude (Optional)</label>
+                            <label data-en="Longitude (Optional)" data-ar="خط الطول (اختياري)">Longitude (Optional)</label>
                             <input type="number" step="any" id="branch-lng" placeholder="31.2357">
                         </div>
                     </div>
                     <div class="modal-actions">
-                        <button type="submit" class="action-btn approve">Create Branch</button>
-                        <button type="button" class="action-btn view" onclick="closeAddBranchModal()">Cancel</button>
+                        <button type="submit" class="action-btn approve" data-en="Create Branch" data-ar="إنشاء الفرع">Create Branch</button>
+                        <button type="button" class="action-btn view" onclick="closeAddBranchModal()" data-en="Cancel" data-ar="إلغاء">Cancel</button>
                     </div>
                 </form>
             </div>
