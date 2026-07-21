@@ -18,7 +18,7 @@ function toggleTheme() {
     const isDark = html.getAttribute('data-theme') === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
     html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    localStorage.setItem('tamenny_theme', newTheme);
     _applyThemeIcon(newTheme);
 }
 
@@ -36,7 +36,7 @@ function _applyThemeIcon(theme) {
 }
 
 function _loadTheme() {
-    const saved = localStorage.getItem('theme') || 'light';
+    const saved = localStorage.getItem('tamenny_theme') || 'light';
     document.documentElement.setAttribute('data-theme', saved);
     _applyThemeIcon(saved);
 }
