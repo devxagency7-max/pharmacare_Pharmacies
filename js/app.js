@@ -559,10 +559,9 @@ async function renderPrescriptions() {
                 <tr>
                     <td>#${rx.id.slice(0,8)}</td>
                     <td>${rx.patientName}</td>
-                    <td>${rx.doctorName || '—'}</td>
                     <td>${imgUrl
                         ? `<a href="${imgUrl}" target="_blank" class="rx-view-btn"><i class='bx bx-image'></i> View RX</a>`
-                        : '—'}</td>
+                        : '<span style="color:#9CA3AF;font-size:0.82em">Not uploaded yet</span>'}</td>
                     <td class="table-actions">
                         <button class="action-btn approve" onclick="approveRx('${rx.id}','${rx.patientName}')">Approve</button>
                         <button class="action-btn reject"  onclick="promptRxReject('${rx.id}','${rx.patientName}')">Reject</button>
