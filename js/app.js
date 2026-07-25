@@ -161,6 +161,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 6. Start polling (unread count every 30s, orders refresh every 20s)
     startPolling();
+
+    // 7. Close detail modals when clicking outside
+    ['order-detail-modal', 'rx-detail-modal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
+    });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -409,6 +415,7 @@ async function renderOrders(showLoading = true) {
                 <td>${(o.items || []).map(i => `${i.name} ×${i.quantity}`).join(', ') || '—'}</td>
                 <td>${formatTime(o.createdAt)}</td>
                 <td class="table-actions">
+                    <button class="action-btn view" title="View Details" onclick='openOrderDetail(${JSON.stringify(o)})'><i class='bx bx-show'></i></button>
                     <button class="action-btn approve" onclick="promptAccept('${o.id}')">Accept</button>
                     <button class="action-btn reject"  onclick="promptReject('${o.id}')">Reject</button>
                 </td>
@@ -422,6 +429,7 @@ async function renderOrders(showLoading = true) {
                 <td>${o.customerName}</td>
                 <td>${o.deliveryNotes || '—'}</td>
                 <td class="table-actions">
+                    <button class="action-btn view" title="View Details" onclick='openOrderDetail(${JSON.stringify(o)})'><i class='bx bx-show'></i></button>
                     ${o.customerPhone
                         ? `<a href="tel:${o.customerPhone}" class="action-btn approve"><i class='bx bx-phone'></i> Call</a>`
                         : '<span style="color:#9CA3AF;font-size:0.85em">No phone yet</span>'}
@@ -437,8 +445,11 @@ async function renderOrders(showLoading = true) {
                 <td>${o.customerName}</td>
                 <td><span class="status-badge ${getStatusClass(o.orderStatus)}">${o.orderStatus}</span></td>
                 <td>${formatTime(o.createdAt)}</td>
+                <td class="table-actions">
+                    <button class="action-btn view" title="View Details" onclick='openOrderDetail(${JSON.stringify(o)})'><i class='bx bx-show'></i></button>
+                </td>
             </tr>
-        `).join('') || '<tr><td colspan="4" style="text-align:center">History is empty</td></tr>';
+        `).join('') || '<tr><td colspan="5" style="text-align:center">History is empty</td></tr>';
 
         // Refresh dashboard stats if that section is currently visible
         const dashSection = document.getElementById('dashboard');
@@ -512,6 +523,70 @@ function promptReject(orderId) {
     }
 }
 
+// ─────────────────────────────────────────────────────────────
+// Order Detail Modal
+// ─────────────────────────────────────────────────────────────
+
+function openOrderDetail(order) {
+    const modal = document.getElementById('order-detail-modal');
+    if (!modal) return;
+
+    document.getElementById('odm-id').textContent       = '#' + order.id.slice(0, 8);
+    document.getElementById('odm-status').textContent   = order.orderStatus || '—';
+    document.getElementById('odm-status').className     = 'status-badge ' + getStatusClass(order.orderStatus);
+    document.getElementById('odm-patient').textContent  = order.customerName || '—';
+    document.getElementById('odm-phone').textContent    = order.customerPhone || 'Not available';
+    document.getElementById('odm-address').textContent  = order.deliveryAddress || order.deliveryNotes || '—';
+    document.getElementById('odm-notes').textContent    = order.notes || order.deliveryNotes || '—';
+    document.getElementById('odm-date').textContent     = formatTime(order.createdAt);
+    document.getElementById('odm-price').textContent    = order.finalPrice != null ? order.finalPrice + ' EGP' : '—';
+
+    const items = order.items || [];
+    document.getElementById('odm-items').innerHTML = items.length
+        ? items.map(i => `<li><span class="odm-item-name">${i.name}</span><span class="odm-item-qty">×${i.quantity}</span>${i.drugForm ? `<span class="odm-item-form">${i.drugForm}</span>` : ''}</li>`).join('')
+        : '<li style="color:#9CA3AF">No items</li>';
+
+    modal.classList.add('active');
+}
+
+function closeOrderDetail() {
+    const modal = document.getElementById('order-detail-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function closeRxDetail() {
+    const modal = document.getElementById('rx-detail-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Prescription Detail Modal
+// ─────────────────────────────────────────────────────────────
+
+function openRxDetail(rx) {
+    const modal = document.getElementById('rx-detail-modal');
+    if (!modal) return;
+
+    document.getElementById('rxdm-id').textContent      = '#' + rx.id.slice(0, 8);
+    document.getElementById('rxdm-status').textContent  = rx.status || '—';
+    document.getElementById('rxdm-status').className    = 'status-badge ' + getStatusClass(rx.status);
+    document.getElementById('rxdm-patient').textContent = rx.patientName || '—';
+    document.getElementById('rxdm-phone').textContent   = rx.patientPhone || 'Not available';
+    document.getElementById('rxdm-doctor').textContent  = rx.doctorName || '—';
+    document.getElementById('rxdm-clinic').textContent  = rx.clinicName || '—';
+    document.getElementById('rxdm-issue').textContent   = rx.issueDate ? rx.issueDate.slice(0,10) : '—';
+    document.getElementById('rxdm-expiry').textContent  = rx.expiryDate ? rx.expiryDate.slice(0,10) : '—';
+    document.getElementById('rxdm-date').textContent    = formatTime(rx.createdAt);
+
+    const imgUrl = (rx.imageUrls && rx.imageUrls[0]) || rx.imageUrl || null;
+    const imgBox = document.getElementById('rxdm-image-box');
+    imgBox.innerHTML = imgUrl
+        ? `<a href="${imgUrl}" target="_blank"><img src="${imgUrl}" alt="Prescription Image" style="max-width:100%;border-radius:8px;cursor:zoom-in"></a>`
+        : `<div style="padding:24px;text-align:center;color:#9CA3AF;background:rgba(0,0,0,0.04);border-radius:8px"><i class='bx bx-image' style="font-size:2rem"></i><p style="margin:8px 0 0">Image not uploaded yet</p></div>`;
+
+    modal.classList.add('active');
+}
+
 function switchQueueTab(tab) {
     document.querySelectorAll('.q-tab').forEach(t  => t.classList.remove('active'));
     document.querySelectorAll('.q-pane').forEach(p => p.classList.remove('active'));
@@ -563,6 +638,7 @@ async function renderPrescriptions() {
                         ? `<a href="${imgUrl}" target="_blank" class="rx-view-btn"><i class='bx bx-image'></i> View RX</a>`
                         : '<span style="color:#9CA3AF;font-size:0.82em">Not uploaded yet</span>'}</td>
                     <td class="table-actions">
+                        <button class="action-btn view" title="View Details" onclick='openRxDetail(${JSON.stringify(rx)})'><i class='bx bx-show'></i></button>
                         <button class="action-btn approve" onclick="approveRx('${rx.id}','${rx.patientName}')">Approve</button>
                         <button class="action-btn reject"  onclick="promptRxReject('${rx.id}','${rx.patientName}')">Reject</button>
                     </td>
@@ -585,6 +661,7 @@ async function renderPrescriptions() {
                     <td>${rx.patientName}</td>
                     <td><span class="status-badge success">Approved</span></td>
                     <td class="table-actions">
+                        <button class="action-btn view" title="View Details" onclick='openRxDetail(${JSON.stringify(rx)})'><i class='bx bx-show'></i></button>
                         ${rx.patientPhone
                             ? `<a href="tel:${rx.patientPhone}" class="action-btn approve"><i class='bx bx-phone'></i> Call</a>`
                             : '<span style="color:#9CA3AF">Phone unavailable</span>'}
@@ -604,8 +681,11 @@ async function renderPrescriptions() {
                     <td>${rx.patientName}</td>
                     <td><span class="status-badge ${getStatusClass(rx.status)}">${rx.status}</span></td>
                     <td>${formatTime(rx.createdAt)}</td>
+                    <td class="table-actions">
+                        <button class="action-btn view" title="View Details" onclick='openRxDetail(${JSON.stringify(rx)})'><i class='bx bx-show'></i></button>
+                    </td>
                 </tr>
-            `).join('') || '<tr><td colspan="4" style="text-align:center">No prescription history</td></tr>';
+            `).join('') || '<tr><td colspan="5" style="text-align:center">No prescription history</td></tr>';
         }
 
     } catch (err) {

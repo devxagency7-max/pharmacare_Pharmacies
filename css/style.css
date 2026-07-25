@@ -1202,7 +1202,53 @@ ul {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
 }
+
+.modal.active {
+    display: flex;
+}
+
+/* branch-modal uses inline style display:block — keep it centered */
+#branch-modal[style*="display: block"] {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Detail modals (order + prescription) ── */
+#order-detail-modal .modal-content,
+#rx-detail-modal .modal-content {
+    margin: 0;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.odm-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.odm-items-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    font-size: 0.9rem;
+}
+
+.odm-items-list li:last-child { border-bottom: none; }
+
+.odm-item-name { flex: 1; font-weight: 500; color: var(--text-main); }
+.odm-item-qty  { background: var(--bg-main); padding: 2px 8px; border-radius: 20px; font-size: 0.82rem; color: var(--text-muted); }
+.odm-item-form { font-size: 0.8rem; color: var(--text-muted); }
+
+[data-theme="dark"] .odm-items-list li { border-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .odm-item-qty { background: rgba(255,255,255,0.06); }
 
 .modal-content {
     background-color: var(--bg-card);

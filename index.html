@@ -277,6 +277,7 @@
                                         <th data-en="Customer" data-ar="العميل">Customer</th>
                                         <th data-en="Status" data-ar="الحالة">Status</th>
                                         <th data-en="Date" data-ar="التاريخ">Date</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-history-orders"></tbody>
@@ -346,6 +347,7 @@
                                         <th data-en="Patient" data-ar="المريض">Patient</th>
                                         <th data-en="Final Status" data-ar="الحالة النهائية">Final Status</th>
                                         <th data-en="Date" data-ar="التاريخ">Date</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-history-rxs"></tbody>
@@ -568,6 +570,91 @@
                     <div id="stage-call" class="action-group" style="display: none;">
                         <button class="action-btn approve" onclick="handleOrderAction('confirm')" data-en="Confirm Order (Done)" data-ar="تأكيد الطلب (تم)">Confirm Order (Done)</button>
                         <button class="action-btn reject" onclick="handleOrderAction('cancel')" data-en="Cancel Order" data-ar="إلغاء الطلب">Cancel Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal (Eye Icon) -->
+    <div id="order-detail-modal" class="modal">
+        <div class="modal-content" style="max-width:560px">
+            <div class="modal-header">
+                <h2>Order <span id="odm-id"></span> &nbsp;<span id="odm-status" class="status-badge"></span></h2>
+                <span class="close-modal" onclick="closeOrderDetail()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="order-info-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px">
+                    <div class="info-group">
+                        <label data-en="Patient" data-ar="المريض">Patient</label>
+                        <span id="odm-patient"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Phone" data-ar="رقم الهاتف">Phone</label>
+                        <span id="odm-phone" class="phone-highlight"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Date" data-ar="التاريخ">Date</label>
+                        <span id="odm-date"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Final Price" data-ar="السعر النهائي">Final Price</label>
+                        <span id="odm-price"></span>
+                    </div>
+                    <div class="info-group" style="grid-column:1/-1">
+                        <label data-en="Delivery Address" data-ar="عنوان التوصيل">Delivery Address</label>
+                        <span id="odm-address"></span>
+                    </div>
+                    <div class="info-group" style="grid-column:1/-1">
+                        <label data-en="Notes" data-ar="ملاحظات">Notes</label>
+                        <span id="odm-notes"></span>
+                    </div>
+                </div>
+                <div class="order-items-list" style="margin-top:16px">
+                    <h3 data-en="Requested Items" data-ar="المنتجات المطلوبة">Requested Items</h3>
+                    <ul id="odm-items" class="odm-items-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prescription Detail Modal (Eye Icon) -->
+    <div id="rx-detail-modal" class="modal">
+        <div class="modal-content" style="max-width:580px">
+            <div class="modal-header">
+                <h2>Prescription <span id="rxdm-id"></span> &nbsp;<span id="rxdm-status" class="status-badge"></span></h2>
+                <span class="close-modal" onclick="closeRxDetail()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="rxdm-image-box" style="margin-bottom:20px"></div>
+                <div class="order-info-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px">
+                    <div class="info-group">
+                        <label data-en="Patient" data-ar="المريض">Patient</label>
+                        <span id="rxdm-patient"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Phone" data-ar="رقم الهاتف">Phone</label>
+                        <span id="rxdm-phone" class="phone-highlight"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Doctor" data-ar="الطبيب">Doctor</label>
+                        <span id="rxdm-doctor"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Clinic" data-ar="العيادة">Clinic</label>
+                        <span id="rxdm-clinic"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Issue Date" data-ar="تاريخ الإصدار">Issue Date</label>
+                        <span id="rxdm-issue"></span>
+                    </div>
+                    <div class="info-group">
+                        <label data-en="Expiry Date" data-ar="تاريخ الانتهاء">Expiry Date</label>
+                        <span id="rxdm-expiry"></span>
+                    </div>
+                    <div class="info-group" style="grid-column:1/-1">
+                        <label data-en="Submitted" data-ar="تاريخ التقديم">Submitted</label>
+                        <span id="rxdm-date"></span>
                     </div>
                 </div>
             </div>
