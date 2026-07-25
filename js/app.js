@@ -547,20 +547,29 @@ async function renderPrescriptions() {
             tableNew.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#EF4444">${pendingRes.message || 'Failed to load'}</td></tr>`;
         } else {
             const pending = pendingRes.data.items || [];
-            tableNew.innerHTML = pending.map(rx => `
+            if (pending.length) console.log('[RX] sample prescription object:', pending[0]);
+            tableNew.innerHTML = pending.map(rx => {
+                const imgUrl = (rx.imageUrls && rx.imageUrls[0])
+                    || rx.imageUrl
+                    || (rx.images && rx.images[0])
+                    || rx.prescriptionImageUrl
+                    || rx.rxImageUrl
+                    || null;
+                return `
                 <tr>
                     <td>#${rx.id.slice(0,8)}</td>
                     <td>${rx.patientName}</td>
                     <td>${rx.doctorName || '—'}</td>
-                    <td>${(rx.imageUrls && rx.imageUrls[0])
-                        ? `<a href="${rx.imageUrls[0]}" target="_blank" class="rx-view-btn"><i class='bx bx-image'></i> View RX</a>`
+                    <td>${imgUrl
+                        ? `<a href="${imgUrl}" target="_blank" class="rx-view-btn"><i class='bx bx-image'></i> View RX</a>`
                         : '—'}</td>
                     <td class="table-actions">
                         <button class="action-btn approve" onclick="approveRx('${rx.id}','${rx.patientName}')">Approve</button>
                         <button class="action-btn reject"  onclick="promptRxReject('${rx.id}','${rx.patientName}')">Reject</button>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="5" style="text-align:center">No pending prescriptions</td></tr>';
+            `;
+            }).join('') || '<tr><td colspan="5" style="text-align:center">No pending prescriptions</td></tr>';
 
             const elRx = document.getElementById('stat-pending-prescriptions');
             if (elRx) elRx.textContent = pending.length;
