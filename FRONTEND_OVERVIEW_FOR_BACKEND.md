@@ -2,7 +2,7 @@
 
 > **Purpose of this document:** Full description of what the frontend (Web Dashboard) currently builds, displays, and needs from the backend API. Read this before building or debugging any endpoint that serves the pharmacy side.
 
-**Base URL:** `http://204.168.149.185/api/v1`
+**Base URL:** `http://187.7.30.23/api/v1`
 **Auth:** Firebase JWT — `Authorization: Bearer {firebase_id_token}`
 **Required Role:** `Pharmacist` or `PharmacyOwner`
 

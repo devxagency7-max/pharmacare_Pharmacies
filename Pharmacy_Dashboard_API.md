@@ -1,6 +1,6 @@
 # Pharmacy Dashboard API Documentation
 
-**Base URL:** `http://204.168.149.185`
+**Base URL:** `http://187.7.30.23`
 **Version:** v1 | **Auth:** Firebase JWT (Bearer Token) | **Role Required:** `Pharmacist` or `PharmacyOwner`
 
 ---
@@ -30,7 +30,7 @@ Pharmacist logs in using Firebase. Firebase returns a JWT ID Token valid for **1
 
 ### Step 2 — Sync User
 ```
-POST http://204.168.149.185/api/v1/users/sync
+POST http://187.7.30.23/api/v1/users/sync
 ```
 **Headers:**
 ```
@@ -65,7 +65,7 @@ Content-Type: application/json
 
 ### Step 3 — Get Profile
 ```
-GET http://204.168.149.185/api/v1/users/me
+GET http://187.7.30.23/api/v1/users/me
 ```
 **Response 200:**
 ```json

@@ -1,7 +1,7 @@
 /**
  * pharmacies.js - API Client for Pharmacy & Branch Management
  *
- * Base URL: http://204.168.149.185/api/v1
+ * Base URL: http://187.7.30.23/api/v1
  * Auth:     Bearer firebase_token (from localStorage)
  *
  * NOTE on routes confirmed from backend source:
