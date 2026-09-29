@@ -212,12 +212,9 @@ async function loadCurrentUser() {
         const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0D8ABC&color=fff`;
         const sanitizedUrl = sanitizeImageUrl(displayLogo, displayName);
 
-        // Only replace the current image if the backend gave us a real HTTPS logo URL.
-        // If displayLogo is empty/http, keep whatever is already showing (e.g. the local preview
-        // set immediately after save) instead of flashing back to the initials fallback.
-        const isRealUrl = sanitizedUrl && sanitizedUrl.startsWith('https://') && !sanitizedUrl.includes('ui-avatars.com');
+        const isRealUrl = sanitizedUrl && !sanitizedUrl.includes('ui-avatars.com');
         const currentSrc = imgEl.src || '';
-        const keepCurrent = currentSrc && (currentSrc.startsWith('data:') || (!currentSrc.includes('ui-avatars.com') && currentSrc.startsWith('https://')));
+        const keepCurrent = currentSrc && (currentSrc.startsWith('data:') || !currentSrc.includes('ui-avatars.com'));
 
         if (isRealUrl) {
             imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = fallbackUrl; };
@@ -1088,16 +1085,44 @@ async function initSettings() {
 function sanitizeImageUrl(url, name) {
     const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'P')}&background=0D8ABC&color=fff`;
     if (!url) return fallback;
-    url = url.trim();
+    url = String(url).trim();
     if (url === '' || url === 'string' || url === 'null' || url === 'undefined') return fallback;
 
-    // Already a valid absolute URL (https R2 signed URL, data URI, etc.) — use as-is
-    if (url.startsWith('https://') || url.startsWith('data:')) return url;
+    // Data URI (base64) or HTTPS URL (S3 / R2 signed URL)
+    if (url.startsWith('data:') || url.startsWith('https://')) return url;
 
-    // http:// URLs would be blocked as mixed-content on the HTTPS Vercel site — use fallback
-    if (url.startsWith('http://')) return fallback;
+    // Convert server API files HTTP URLs to HTTPS proxy path (/backend-files)
+    if (url.includes('/api/files/')) {
+        const pathPart = url.split('/api/files/')[1];
+        return `${FILES_BASE}/${pathPart}`;
+    }
+    if (url.includes('/api/v1/files/')) {
+        const pathPart = url.split('/api/v1/files/')[1];
+        return `${FILES_BASE}/${pathPart}`;
+    }
 
-    // Relative path or raw object key — not directly usable; backend should return full https URL
+    // Already formatted Vercel proxy paths
+    if (url.startsWith('/backend-files/') || url.startsWith('/backend/')) return url;
+
+    // Relative paths starting with /
+    if (url.startsWith('/')) {
+        return `${FILES_BASE}${url}`;
+    }
+
+    // Relative paths without leading / (e.g. "files/xyz.png" or "uploads/xyz.png")
+    if (url.startsWith('files/')) {
+        return `${FILES_BASE}/${url.substring(6)}`;
+    }
+    if (url.startsWith('uploads/') || url.startsWith('images/') || url.startsWith('pharmacies/')) {
+        return `${FILES_BASE}/${url}`;
+    }
+
+    // Direct HTTP URLs
+    if (url.startsWith('http://')) {
+        if (window.location.protocol === 'http:') return url;
+        return url.replace(/^http:\/\//i, 'https://');
+    }
+
     return fallback;
 }
 
@@ -1193,8 +1218,9 @@ async function savePharmacyProfile(event) {
             const savedLogoUrl = result.data?.logoUrl;
             if (headerImg) {
                 headerImg.onerror = null;
-                if (savedLogoUrl && (savedLogoUrl.startsWith('https://') || savedLogoUrl.startsWith('data:'))) {
-                    headerImg.src = savedLogoUrl;
+                const sanitizedSaved = savedLogoUrl ? sanitizeImageUrl(savedLogoUrl, name) : null;
+                if (sanitizedSaved && !sanitizedSaved.includes('ui-avatars.com')) {
+                    headerImg.src = sanitizedSaved;
                 } else if (window.pendingLogoData) {
                     headerImg.src = window.pendingLogoData;
                 }
