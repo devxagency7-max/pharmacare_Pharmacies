@@ -45,14 +45,15 @@ async function apiGetPharmacyProfile(pharmacyId) {
 }
 
 /**
- * Update pharmacy public profile (name, logo, governorate, address, hours, isOpen).
+ * Update pharmacy public profile (name, logoUploadedFileId, governorate, address, hours, isOpen).
  * Backend resolves "which pharmacy" from the Bearer token (OwnerId match) — no ID in URL.
  *
  * @param {Object} profileData
- * @param {string} profileData.name            Required
- * @param {string} profileData.governorate     Required
- * @param {string} profileData.address         Required
- * @param {string} [profileData.logoUrl]       Pass "" to leave existing logo unchanged
+ * @param {string} profileData.name                  Required
+ * @param {string} profileData.governorate           Required
+ * @param {string} profileData.address               Required
+ * @param {string} [profileData.logoUploadedFileId]  The file GUID returned from Step 1 upload
+ * @param {string} [profileData.logoUrl]             (Legacy / preview URL)
  * @param {string} [profileData.workingHoursDescription]
  * @param {boolean} [profileData.isOpen]
  */
@@ -89,7 +90,7 @@ async function apiSetPharmacyOpenStatus(isOpen, currentProfile) {
 /**
  * Upload pharmacy logo.
  * Step 1: POST to /api/files/upload (note: NOT /api/v1/...).
- * Step 2: Take returned URL and call apiUpdatePharmacyProfile({ logoUrl: url, ...rest }).
+ * Step 2: Take returned id (uploadedFileId) and call apiUpdatePharmacyProfile({ logoUploadedFileId: id, name, governorate, address, ... }).
  *
  * Rate limit: 10 requests / minute on this endpoint.
  * Max file size: 5 MB. Accepted types: JPG, PNG (magic-byte validated server-side).

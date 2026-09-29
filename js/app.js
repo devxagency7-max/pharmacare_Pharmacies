@@ -1173,7 +1173,8 @@ async function savePharmacyProfile(event) {
     btn.disabled = true; btn.textContent = 'Saving...';
 
     try {
-        let logoUrl = undefined; // undefined = don't send logoUrl field at all (keeps existing logo)
+        let logoUrl = undefined;
+        let logoUploadedFileId = undefined;
 
         if (window.pendingLogoFile) {
             const uploadResult = await apiUploadLogo(window.pendingLogoFile);
@@ -1185,8 +1186,9 @@ async function savePharmacyProfile(event) {
                 return;
             }
 
-            // Backend may return the URL under various field names — try all of them
+            // Backend returns { success: true, data: { id: "<uploadedFileId>", previewUrl: "..." } }
             const d = uploadResult.data;
+            logoUploadedFileId = (typeof d === 'object' ? (d?.id || d?.uploadedFileId || d?.fileId) : null);
             logoUrl = (typeof d === 'string' ? d : null)
                    || d?.previewUrl
                    || d?.url
@@ -1198,11 +1200,11 @@ async function savePharmacyProfile(event) {
                    || d?.fileKey
                    || '';
 
-            console.log('[Logo Upload] Extracted logoUrl:', logoUrl);
+            console.log('[Logo Upload] Extracted logoUploadedFileId:', logoUploadedFileId, 'logoUrl:', logoUrl);
 
-            if (!logoUrl) {
-                console.warn('[Logo Upload] Could not extract URL from response. Full data:', d);
-                alert('Logo uploaded but URL could not be read. Check console for details.');
+            if (!logoUploadedFileId && !logoUrl) {
+                console.warn('[Logo Upload] Could not extract ID or URL from response. Full data:', d);
+                alert('Logo uploaded but file ID could not be read. Check console for details.');
                 btn.disabled = false; btn.textContent = 'Save Changes';
                 return;
             }
@@ -1210,9 +1212,18 @@ async function savePharmacyProfile(event) {
             window.pendingLogoFile = null;
         }
 
-        // Build profile payload — only include logoUrl if we have a new one
-        const profilePayload = { name, governorate: gov, address, workingHoursDescription: hours, isOpen };
+        // Build profile payload — Step 2 expects logoUploadedFileId (GUID from Step 1)
+        const profilePayload = {
+            name,
+            governorate: gov,
+            address,
+            workingHoursDescription: hours || null,
+            isOpen
+        };
+        if (logoUploadedFileId) profilePayload.logoUploadedFileId = logoUploadedFileId;
         if (logoUrl !== undefined) profilePayload.logoUrl = logoUrl;
+
+        console.log('[Save Profile] Payload being sent:', JSON.stringify(profilePayload));
 
         const result = await apiUpdatePharmacyProfile(profilePayload);
 
