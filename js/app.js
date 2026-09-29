@@ -1181,6 +1181,7 @@ async function savePharmacyProfile(event) {
             // Backend may return the URL under various field names — try all of them
             const d = uploadResult.data;
             logoUrl = (typeof d === 'string' ? d : null)
+                   || d?.previewUrl
                    || d?.url
                    || d?.fileUrl
                    || d?.signedUrl
