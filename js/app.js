@@ -1049,6 +1049,13 @@ async function initSettings() {
 
             const govEl = document.getElementById('set-pharmacy-gov');
             if (govEl && ph.governorate) {
+                let exists = Array.from(govEl.options).some(opt => opt.value.toLowerCase() === ph.governorate.toLowerCase());
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = ph.governorate;
+                    opt.textContent = ph.governorate;
+                    govEl.appendChild(opt);
+                }
                 govEl.value = ph.governorate;
             }
 
@@ -1234,7 +1241,8 @@ async function savePharmacyProfile(event) {
 
             alert('Pharmacy profile updated successfully!');
         } else {
-            alert('Save failed: ' + (result.message || 'Unknown error'));
+            const errDetail = extractErrorMessage(result);
+            alert('Save failed: ' + errDetail);
         }
     } finally {
         btn.disabled = false; btn.textContent = 'Save Changes';
@@ -1244,6 +1252,23 @@ async function savePharmacyProfile(event) {
 // ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
+
+function extractErrorMessage(result) {
+    if (!result) return 'Unknown error';
+    if (typeof result === 'string') return result;
+    if (result.message) return result.message;
+    if (result.error) return typeof result.error === 'string' ? result.error : JSON.stringify(result.error);
+    if (result.title) return result.title;
+    if (result.errors) {
+        if (Array.isArray(result.errors)) return result.errors.join(', ');
+        if (typeof result.errors === 'object') {
+            return Object.entries(result.errors)
+                .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+                .join(' | ');
+        }
+    }
+    return 'Unknown error';
+}
 
 function getStatusClass(status) {
     const s = (status || '').toLowerCase();
