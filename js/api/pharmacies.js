@@ -221,3 +221,65 @@ async function apiGetGovernorates() {
         return { success: false, error: error.message };
     }
 }
+
+// ---------------------------------------------------------------------------
+// Admin Operations
+// ---------------------------------------------------------------------------
+
+/**
+ * Reset pharmacy owner password (Admin only).
+ * POST /api/v1/admin/pharmacies/{id}/reset-owner-password
+ *
+ * @param {string} pharmacyId
+ * @returns {Promise<{success: boolean, data?: {pharmacyId: string, name: string, code: string, generatedEmail: string, generatedPassword: string}}>}
+ */
+async function apiResetOwnerPassword(pharmacyId) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/pharmacies/${pharmacyId}/reset-owner-password`, {
+            method: 'POST',
+            headers: _pharmAuthHeader()
+        });
+        return await safeJson(response);
+    } catch (error) {
+        console.error('Error resetting owner password:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Suspend a pharmacy (Admin only).
+ * PUT /api/v1/admin/pharmacies/{id}/suspend
+ *
+ * @param {string} pharmacyId
+ */
+async function apiSuspendPharmacy(pharmacyId) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/pharmacies/${pharmacyId}/suspend`, {
+            method: 'PUT',
+            headers: _pharmAuthHeader()
+        });
+        return await safeJson(response);
+    } catch (error) {
+        console.error('Error suspending pharmacy:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Get rich admin detail read for a pharmacy (Admin only).
+ * GET /api/v1/admin/pharmacies/{id}
+ *
+ * @param {string} pharmacyId
+ */
+async function apiGetAdminPharmacyDetails(pharmacyId) {
+    try {
+        const response = await fetch(`${API_BASE}/admin/pharmacies/${pharmacyId}`, {
+            method: 'GET',
+            headers: _pharmAuthHeader()
+        });
+        return await safeJson(response);
+    } catch (error) {
+        console.error('Error fetching admin pharmacy details:', error);
+        return { success: false, error: error.message };
+    }
+}
